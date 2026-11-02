@@ -41,3 +41,27 @@ Open `index.html` and use the Research laboratory at the top of the main panel:
 - `research-tests.js` can also be invoked from the browser console: `CEPResearch.runRegression()`, `CEPResearch.benchmark()`, `CEPResearch.compareExpected(events, expectedCounts)`.
 
 These are newly constructed regression tests; they are **not** derived from the private Academia Co-scientist account. Original experimental datasets, hypotheses, and expected results need to be imported before claims of research replication can be made.
+
+## Research-informed interface (plain-English guide)
+
+The uploaded research archive was examined, including event-inference-validity, event-sensitivity, event-hierarchy and StockNet restricted-timing-null reports. The interface now provides **Compare detection methods**, **Check whether message order matters**, and **Try different price thresholds**. They are implemented in a separate `research-insights.js` file, leaving `cep-engine.js` as the original-rule port.
+
+The alternative approach groups news by company and PNAC (story identifier), counts a price rise greater than a chosen **absolute number of points** across adjacent price observations, and identifies when a story fits inside the price-observation interval. It reports **single-message** stories distinctly. For research reproducibility, these choices must not be confused with the original C# rules, which use a percentage threshold and an overwrite-based story completion.
+
+### Everyday-language glossary
+
+| Research term | On-screen meaning |
+| --- | --- |
+| Complex event | An event detected by combining other observations |
+| CEP | Rules that search a stream of events for patterns |
+| PNAC | The identifier that links messages belonging to a story |
+| Causal vector / DAG | A list of records and links showing **how the program derived** a result; not evidence of economic causation |
+| Threshold | How large a price move must be to count |
+| Sensitivity analysis | What changes when you vary the rules |
+| Order invariance | Whether a result changes when records are supplied in a different order |
+| Matched null | A comparison that holds relevant background factors more similar; avoids mistaking ordinary market patterns for a special signal |
+| Statistical significance | Strength of evidence against a specified comparison model; not proof of causation |
+
+### Important research qualifications
+
+The StockNet earnings-anchor matched comparisons showed that several apparent associations became much weaker after controlling for market volatility, data coverage, and weekday. This interface **does not claim** to reproduce those controls or their reported p-values. In the future, reproducing that experiment requires the proper session calendars, earnings anchors, matched sampling protocol and data provenance. Also, repeated message order and timestamp ties can affect results even where aggregate totals appear unchanged. A matched event is an **association under a chosen rule**, not an actionable stock forecast.
