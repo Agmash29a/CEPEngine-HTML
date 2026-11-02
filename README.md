@@ -30,3 +30,14 @@ Events retained: `Price Update`, `News Update`, `Price Jump`, `Price Fall`, `New
 Pattern evaluation is performed before enqueuing the incoming event, including recursive evaluation of newly detected complex events, matching the original `Buffer.CheckMatches` / `AddToEventBuffer` behaviour. The original negative-story threshold expression was kept rather than silently changed to a symmetric one.
 
 The original system also contains SQL Server DAL, ASP.NET sessions, ontology XML, overlay and charting code. These server integrations are **not** part of this browser-only port. A full fidelity regression comparison against production SQL records requires those exports.
+
+## Research laboratory
+
+Open `index.html` and use the Research laboratory at the top of the main panel:
+
+- **Run regression suite**: exercises thresholds, news/price correlation, story completion, PNAC isolation, buffer limits, pattern reset, DAG construction and quoted CSV parsing.
+- **Benchmark**: measures median elapsed time for 100, 1,000 and 5,000 synthetic price events (three repetitions) using `performance.now()`.
+- **Export research report**: saves a JSON record with test results, benchmarks, generation time and browser user-agent.
+- `research-tests.js` can also be invoked from the browser console: `CEPResearch.runRegression()`, `CEPResearch.benchmark()`, `CEPResearch.compareExpected(events, expectedCounts)`.
+
+These are newly constructed regression tests; they are **not** derived from the private Academia Co-scientist account. Original experimental datasets, hypotheses, and expected results need to be imported before claims of research replication can be made.
