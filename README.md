@@ -65,3 +65,15 @@ The alternative approach groups news by company and PNAC (story identifier), cou
 ### Important research qualifications
 
 The StockNet earnings-anchor matched comparisons showed that several apparent associations became much weaker after controlling for market volatility, data coverage, and weekday. This interface **does not claim** to reproduce those controls or their reported p-values. In the future, reproducing that experiment requires the proper session calendars, earnings anchors, matched sampling protocol and data provenance. Also, repeated message order and timestamp ties can affect results even where aggregate totals appear unchanged. A matched event is an **association under a chosen rule**, not an actionable stock forecast.
+
+## Interactive event hierarchy
+
+Use **How was this event detected?** below the events table, or click any event in the table. The diagram reads the original `CausalVector` event IDs from `cep-engine.js` and recursively follows those links to the input prices and news messages.
+
+- Select an event from the dropdown or table.
+- Click a box to see a plain-English description, time, and direct source records.
+- Use **+**, **−**, mouse wheel, **Fit to view**, or drag the empty diagram background.
+- Hide/show a branch using the small +/− circle on its box.
+- **Save diagram** exports a self-contained SVG figure suitable for inserting in reports.
+
+`event-hierarchy.js` is dependency-free. It does not change pattern-detection results. Shared source records may be shown in multiple branches to keep each detected event readable. The diagram represents how the software produced a match — it **does not** prove that news caused a price move. The research-based matching alternatives remain separate from the original engine hierarchy.
