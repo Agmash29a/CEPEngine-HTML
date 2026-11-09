@@ -115,3 +115,18 @@ Open `index.html`; scroll to **Understand events using company information (SCEP
 In **Prices and detected events**, hover over a price observation (the blue line) or a coloured event marker. The tooltip shows the timestamp, event type, price/security where available, news headline or story identifier, and the rule that detected a complex event. Multiple events at the exact same plot location are listed together. Clicking a complex-event marker opens its existing event hierarchy. The tooltip disappears when you leave the chart.
 
 The feature is implemented in the independent `chart-hover.js` UI helper; no changes have been made to pattern matching. Test data can be imported via the two CSV selectors.
+
+## Navigating large price and news files
+
+The **Prices and detected events** chart now supports interactive time-range navigation. CEP matching is performed on the full imported dataset; changing the view **only changes the chart**.
+
+- **Mouse wheel over the chart**: zoom in or out, centred around the pointer.
+- **Click and drag horizontally**: select a time window to zoom into.
+- **+ Zoom in / − Zoom out**: zoom around the current window's midpoint.
+- **← Earlier / Later →**: move horizontally through the timeline.
+- **Show all** or **double-click**: reset to the full period.
+- Hover markers to inspect events; click detected-event markers to view their event hierarchy.
+
+The chart displays the number of records in the visible window and the time range. The rendering path uses binary search to locate visible records and a min/max envelope for dense price lines, so spikes remain visible when many observations fall within one horizontal pixel. Its event-marker lookup no longer scans the full price array for each event.
+
+**Limitations:** The event table and CEP engine still process the complete dataset. The chart does not yet provide separate tracks for each security or virtual scrolling of the event table. Very large datasets may still take time to process before zooming is available.
