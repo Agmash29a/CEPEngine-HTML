@@ -44,3 +44,12 @@
 .price-tooltip-entry:first-of-type{border-top:0}
 .price-tooltip-entry strong{display:block;margin:0 0 4px}
 .price-tooltip-hint{color:#9edcca;font-size:11px;border-top:1px solid #35465e;margin-top:7px;padding-top:7px}
+
+/* Timeline navigation: supports tens of thousands of records. */
+.chart-nav{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:12px 0}
+.chart-nav button{width:auto;padding:6px 11px;font-size:12px}
+.chart-nav span{color:#617189;font-size:12px;margin-left:auto}
+.chart-selection{position:absolute;top:20px;height:232px;background:#2e79c633;border:1px solid #2865a7;pointer-events:none}
+.chart-selection[hidden]{display:none}
+#chart{cursor:crosshair;touch-action:none}
+@media(max-width:650px){.chart-nav span{width:100%;margin-left:0}}
