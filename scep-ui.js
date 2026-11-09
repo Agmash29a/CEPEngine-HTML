@@ -8,6 +8,9 @@
  let example=SCEP.sample(),kb=new SCEP.KnowledgeBase(example.triples),input=example.events,analysis=null;
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
  const date=x=>new Date(x).toLocaleString();
+ const hierarchy = new EventHierarchy($('scepHierarchySvg'),$('scepHierarchyDetails'),$('scepHierarchyStatus'));
+ $('scepHierarchyFit').addEventListener('click',()=>hierarchy.fit());
+ $('scepHierarchySave').addEventListener('click',()=>hierarchy.downloadSVG());
  function rules(){
    const opt=id=>$(id).value.trim();
    return {className:opt('scepClass'),industry:opt('scepIndustry'),minEmployees:opt('scepMinStaff')===''?null:Number(opt('scepMinStaff')),maxEmployees:opt('scepMaxStaff')===''?null:Number(opt('scepMaxStaff')),minProfitUSD:opt('scepMinProfit')===''?null:Number(opt('scepMinProfit'))*1e9,priceThresholdPct:Number(opt('scepPriceMove')),newsWindowMinutes:Number(opt('scepNewsWindow'))};
@@ -28,6 +31,7 @@
      const s=analysis.summary;
      $('scepStats').textContent=s.matched+' observations matched your company criteria; '+s.excluded+' excluded; '+s.detected+' new events detected. '+s.unmapped+' observations had no known company mapping.';
      $('scepEvents').innerHTML=analysis.derived.map(e=>'<tr data-id="'+esc(e.Id)+'"><td>'+esc(date(e.TimeStamp))+'</td><td>'+esc(e.Significance)+'</td><td>'+esc(e.Semantic.companyName)+'</td><td>'+e.PercentChange.toFixed(2)+'%</td><td>'+esc(e.Semantic.industry)+'</td><td>'+esc(e.Semantic.employees)+'</td></tr>').join('');
+     hierarchy.setEvents(analysis.all);
      if(!analysis.derived.length)$('scepEvents').innerHTML='<tr><td colspan="6">No events met these criteria. Try removing a filter or lowering the minimum price change.</td></tr>';
      $('scepDetail').textContent='Choose a result to see both its original observations and the company facts used by the rule.';
    }catch(error){$('scepStats').textContent='Problem: '+error.message;console.error(error);}
@@ -56,6 +60,7 @@
  $('scepEvents').addEventListener('click',e=>{
    const tr=e.target.closest('tr[data-id]');if(!tr||!analysis)return;
    const item=analysis.derived.find(x=>x.Id===tr.dataset.id);if(!item)return;
+   hierarchy.select(item.Id);
    const sources=analysis.selected.filter(x=>item.CausalVector.includes(x.Id));
    $('scepDetail').textContent='Detected: '+item.Significance+'\nCompany: '+item.Semantic.companyName+'\nPrice change: '+item.PercentChange+'%\n\nInput observations:\n'+sources.map(x=>'- '+x.Significance+' at '+date(x.TimeStamp)+(x.LIST_PRICE!=null?', price '+x.LIST_PRICE:'')+(x.HEADLINE_ALERT_TEXT?', '+x.HEADLINE_ALERT_TEXT:'')).join('\n')+'\n\nCompany facts used in evaluation:\n'+item.Semantic.matchedFacts.map(x=>x.subject+' '+x.predicate+' '+x.object).join('\n')+'\n\nThese links explain the rule match, not why the market actually moved.';
  });
