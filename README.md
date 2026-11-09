@@ -109,3 +109,9 @@ This is a useful subset, **not** a fully standards-compliant RDF/RDFS/OWL engine
 ### Browser usage
 
 Open `index.html`; scroll to **Understand events using company information (SCEP)**. Start with **Load demonstration**, then select **CarManufacturer** in **Kind of company**. Change **At most this many employees** to 10000 to exclude the larger example automaker. Try **Minimum net profit** = 2 to retain only illustrative companies with profit at least two billion USD, or use the **Save example data** button.
+
+## Price chart hover details
+
+In **Prices and detected events**, hover over a price observation (the blue line) or a coloured event marker. The tooltip shows the timestamp, event type, price/security where available, news headline or story identifier, and the rule that detected a complex event. Multiple events at the exact same plot location are listed together. Clicking a complex-event marker opens its existing event hierarchy. The tooltip disappears when you leave the chart.
+
+The feature is implemented in the independent `chart-hover.js` UI helper; no changes have been made to pattern matching. Test data can be imported via the two CSV selectors.
