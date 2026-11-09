@@ -134,17 +134,20 @@
       root.hidden = false;
     }
     position(e) {
-      const parent = this.canvas.parentElement;
-      const bounds = parent.getBoundingClientRect();
       const tooltip = this.tooltip;
       const w = tooltip.offsetWidth, h = tooltip.offsetHeight;
-      const x = e.clientX-bounds.left, y=e.clientY-bounds.top;
-      // Keep the popup inside the chart surface, rather than clipping it.
-      const left = Math.max(4, Math.min(bounds.width-w-4,x+16));
-      const above = y+18+h > bounds.height && y-h-14>=0;
-      const top = Math.max(4, Math.min(bounds.height-h-4,above?y-h-12:y+18));
-      tooltip.style.left = Math.round(left)+'px';
-      tooltip.style.top = Math.round(top)+'px';
+      const edge = 8, gap = 16;
+      // The box can grow taller than the chart. Position it relative to the
+      // viewport rather than constraining it to the chart's 290px canvas.
+      // Unlike a scrollable popup, the user can read the details while
+      // keeping the pointer over the event marker.
+      const roomRight = window.innerWidth - e.clientX;
+      const left = roomRight >= w + gap + edge
+        ? e.clientX + gap : e.clientX - w - gap;
+      const top = e.clientY + gap + h <= window.innerHeight - edge
+        ? e.clientY + gap : e.clientY - h - gap;
+      tooltip.style.left = Math.round(Math.max(edge, Math.min(window.innerWidth-w-edge,left)))+'px';
+      tooltip.style.top = Math.round(Math.max(edge, Math.min(window.innerHeight-h-edge,top)))+'px';
     }
     hide(){this.current=null;this.tooltip.hidden=true;this.canvas.style.cursor='default';}
   }
