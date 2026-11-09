@@ -77,3 +77,35 @@ Use **How was this event detected?** below the events table, or click any event 
 - **Save diagram** exports a self-contained SVG figure suitable for inserting in reports.
 
 `event-hierarchy.js` is dependency-free. It does not change pattern-detection results. Shared source records may be shown in multiple branches to keep each detected event readable. The diagram represents how the software produced a match — it **does not** prove that news caused a price move. The research-based matching alternatives remain separate from the original engine hierarchy.
+
+## SCEP — semantic knowledge-aware event detection (thesis, Chapter 6)
+
+This addition is motivated by Riley T Perry, *Combining a complex event style model with analysis to find unique patterns in data*, UNSW PhD thesis (2018), especially Chapter 6 §§6.1–6.2.2 and §6.2.6.
+
+**SCEP** means **Semantic Complex Event Processing**. This mode runs beside the original CEP program; it **does not** replace or silently change the original price and news patterns.
+
+Files:
+- `scep-engine.js` — dependency-free knowledge-base triples, `rdf:type` and transitive `rdfs:subClassOf` checking, company enrichment, and semantic-aware event matching.
+- `scep-ui.js` — filters, explanations, JSON import/export, knowledge inspection.
+- `examples/scep-company-knowledge.json` — synthetic company facts (including a subclass hierarchy).
+- `examples/scep-market-events.json` — synthetic price and news observations.
+- `examples/scep-guide.md` — worked examples and limitations.
+
+### What can the new mode do?
+
+1. Understand that a **car manufacturer** is also a **manufacturer** and **company**, through the supplied company-type hierarchy.
+2. Link instrument codes to known company profiles.
+3. Filter data by company type, industry, employee count and net profit in USD.
+4. Identify sufficiently large price changes and nearby preceding news, with company knowledge attached.
+5. Explain each matched event using the original event IDs and the relevant company facts.
+6. Change the rules and run the same data again to compare outcomes.
+
+The SCEP mode reads **JSON files directly**. Use its file inputs to load company facts and event records. Original CEP still uses its independent CSV inputs. The demonstration is purely illustrative: **employee counts, company profit, historical times, prices and headlines are deliberately invented**, even when familiar company names are used.
+
+### What is NOT yet implemented?
+
+This is a useful subset, **not** a fully standards-compliant RDF/RDFS/OWL engine. It does not run arbitrary SPARQL, import complete FIBO ontologies, automatically generate a visualisation ontology, perform supervised machine learning, run multiple buffers in parallel, or reproduce the thesis's financial experiments. Semantic relationships are currently configured through simple, explicit facts; ontology and knowledge-base relationships are not complete reasoning systems.
+
+### Browser usage
+
+Open `index.html`; scroll to **Understand events using company information (SCEP)**. Start with **Load demonstration**, then select **CarManufacturer** in **Kind of company**. Change **At most this many employees** to 10000 to exclude the larger example automaker. Try **Minimum net profit** = 2 to retain only illustrative companies with profit at least two billion USD, or use the **Save example data** button.
