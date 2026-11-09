@@ -34,7 +34,7 @@
 /* Event details over the price chart. Positioned inside the plotted surface. */
 .price-chart-surface{position:relative;min-width:0}
 .price-chart-help{font-size:11px;color:#66758a;margin:8px 0 0}
-.price-chart-tooltip{position:absolute;z-index:15;width:min(310px,calc(100% - 8px));max-height:270px;overflow:auto;background:#17263b;color:#f8fafc;border:1px solid #334861;box-shadow:0 8px 24px #182a4838;border-radius:9px;padding:11px 12px;pointer-events:none;font-size:12px;line-height:1.45}
+.price-chart-tooltip{position:fixed;z-index:1000;width:min(340px,calc(100vw - 16px));max-height:none;overflow:visible;background:#17263b;color:#f8fafc;border:1px solid #334861;box-shadow:0 8px 24px #182a4838;border-radius:9px;padding:11px 12px;pointer-events:none;font-size:12px;line-height:1.45}
 .price-chart-tooltip[hidden]{display:none}
 .price-tooltip-heading{font-size:13px;font-weight:750;margin-bottom:7px}
 .price-tooltip-row{display:flex;justify-content:space-between;gap:10px;margin:3px 0;overflow-wrap:anywhere}
