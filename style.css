@@ -16,3 +16,17 @@
 .hierarchy-explanation p{margin:7px 0}
 .hierarchy-explanation ol{margin:4px 0;padding-left:20px}
 @media(max-width:650px){.hierarchy-stage{height:380px}.hierarchy-toolbar select{flex-basis:100%}}
+
+/* SCEP controls, based on the plain-language interpretation of thesis Chapter 6 */
+.scep-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin:16px 0}
+.scep-controls label,.scep-files label{font-size:12px;font-weight:650;display:grid;gap:6px}
+.scep-controls input,.scep-controls select{width:100%}
+.scep-actions{display:flex;flex-wrap:wrap;gap:8px}
+.scep-actions button{width:auto}
+.scep-files{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px}
+.scep-files input{max-width:240px}
+#scepPanel h3{font-size:14px;margin-top:18px}
+#scepPanel details{margin-top:16px}
+#scepPanel summary{cursor:pointer;font-weight:650}
+#scepEvents tr[data-id]{cursor:pointer}
+#scepDetail{background:#f4f8fd;padding:12px;border-radius:6px;white-space:pre-wrap}
