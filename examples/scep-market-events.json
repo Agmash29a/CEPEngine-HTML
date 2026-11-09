@@ -1,0 +1,116 @@
+[
+  {
+    "Id": "example-price-1",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:00:00.000Z",
+    "SECURITY": "EXM",
+    "LIST_PRICE": 40
+  },
+  {
+    "Id": "example-news-2",
+    "Significance": "News Update",
+    "TimeStamp": "2026-01-12T09:03:00.000Z",
+    "RELATED_RICS": [
+      "EXM"
+    ],
+    "PNAC": "EXM-1",
+    "EVENT_TYPE": "HEADLINE",
+    "HEADLINE_ALERT_TEXT": "Fictional manufacturer announces new orders"
+  },
+  {
+    "Id": "example-price-3",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:11:00.000Z",
+    "SECURITY": "EXM",
+    "LIST_PRICE": 42.5
+  },
+  {
+    "Id": "example-price-4",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:00:00.000Z",
+    "SECURITY": "BMW.DE",
+    "LIST_PRICE": 90
+  },
+  {
+    "Id": "example-news-5",
+    "Significance": "News Update",
+    "TimeStamp": "2026-01-12T09:08:00.000Z",
+    "RELATED_RICS": [
+      "BMW.DE"
+    ],
+    "PNAC": "BMW-1",
+    "EVENT_TYPE": "HEADLINE",
+    "HEADLINE_ALERT_TEXT": "Illustrative BMW manufacturing update"
+  },
+  {
+    "Id": "example-price-6",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:16:00.000Z",
+    "SECURITY": "BMW.DE",
+    "LIST_PRICE": 94
+  },
+  {
+    "Id": "example-price-7",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:00:00.000Z",
+    "SECURITY": "BHP",
+    "LIST_PRICE": 45
+  },
+  {
+    "Id": "example-news-8",
+    "Significance": "News Update",
+    "TimeStamp": "2026-01-12T09:06:00.000Z",
+    "RELATED_RICS": [
+      "BHP"
+    ],
+    "PNAC": "BHP-1",
+    "EVENT_TYPE": "HEADLINE",
+    "HEADLINE_ALERT_TEXT": "Illustrative mining sector update"
+  },
+  {
+    "Id": "example-price-9",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:19:00.000Z",
+    "SECURITY": "BHP",
+    "LIST_PRICE": 48
+  },
+  {
+    "Id": "example-price-10",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:35:00.000Z",
+    "SECURITY": "EXM",
+    "LIST_PRICE": 42.5
+  },
+  {
+    "Id": "example-news-11",
+    "Significance": "News Update",
+    "TimeStamp": "2026-01-12T09:36:00.000Z",
+    "RELATED_RICS": [
+      "EXM"
+    ],
+    "PNAC": "EXM-2",
+    "EVENT_TYPE": "HEADLINE",
+    "HEADLINE_ALERT_TEXT": "Fictional manufacturer reports delays"
+  },
+  {
+    "Id": "example-price-12",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:43:00.000Z",
+    "SECURITY": "EXM",
+    "LIST_PRICE": 40.8
+  },
+  {
+    "Id": "example-price-13",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:00:00.000Z",
+    "SECURITY": "UNMAPPED",
+    "LIST_PRICE": 10
+  },
+  {
+    "Id": "example-price-14",
+    "Significance": "Price Update",
+    "TimeStamp": "2026-01-12T09:12:00.000Z",
+    "SECURITY": "UNMAPPED",
+    "LIST_PRICE": 11
+  }
+]
