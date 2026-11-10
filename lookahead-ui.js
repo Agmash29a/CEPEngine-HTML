@@ -43,7 +43,7 @@
      points.forEach((p,i)=>i?ctx.lineTo(x(p[0]),y(p[1])):ctx.moveTo(x(p[0]),y(p[1])));
      ctx.stroke();ctx.setLineDash([]);
    };
-   line(hist.map((value,i)=>[i,value]),'#172b48',2.8);
+   line(hist.map((value,i)=>[i,value]),'#172b48',[],2.8);
    const cutoffX=x(countLeft);
    ctx.setLineDash([5,4]);ctx.strokeStyle='#d34f52';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cutoffX,m.t);ctx.lineTo(cutoffX,m.t+ih);ctx.stroke();ctx.setLineDash([]);
    ctx.fillStyle='#b62c3f';ctx.fillText('Current time / cut-off',Math.min(cutoffX+5,width-155),18);
