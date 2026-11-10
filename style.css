@@ -67,3 +67,13 @@
 .lookahead-plot{border:1px solid #dce3eb;border-radius:9px;background:#fbfdff;padding:4px;overflow:hidden}
 #lookaheadCanvas{width:100%;height:355px;max-height:none}
 #lookaheadDescription{font-size:12px;background:#f5f8fc;padding:12px;border-radius:6px}
+
+/* PDAG directly below the detected-events table. */
+#detectedPanel .pdag-inspector{border-top:1px solid #e4eaf1;margin-top:18px;padding-top:17px}
+.pdag-inspector h3{font-size:14px;margin:0}
+.pdag-stage{height:410px;border:1px solid #dce3eb;border-radius:9px;overflow:auto;background:#fbfdff;margin:12px 0}
+#pdagSvg{display:block;width:100%;height:100%;min-height:360px}
+#pdagSvg g[role="button"]{cursor:pointer}
+#pdagSvg g[role="button"]:hover rect:first-child{filter:drop-shadow(0 2px 4px #9badbd)}
+#pdagSvg g[role="button"]:focus-visible{outline:2px solid #2675b8}
+@media(max-width:650px){.pdag-stage{height:350px}}
