@@ -53,3 +53,17 @@
 .chart-selection[hidden]{display:none}
 #chart{cursor:crosshair;touch-action:none}
 @media(max-width:650px){.chart-nav span{width:100%;margin-left:0}}
+
+/* Experimental historical-analogue Look Ahead */
+.lookahead-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:15px 0}
+.lookahead-controls label{display:grid;gap:5px;font-size:12px;font-weight:650}
+.lookahead-controls input{width:100%}
+.lookahead-controls .lookahead-toggle{display:flex;align-items:center;gap:9px;align-self:end}
+.lookahead-controls .lookahead-toggle input{width:auto}
+.lookahead-cutoff-label{font-size:12px;font-weight:650;display:block;margin-bottom:6px}
+#lookaheadCutoff{width:100%;accent-color:#d34f52}
+.lookahead-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.lookahead-actions button{width:auto}
+.lookahead-plot{border:1px solid #dce3eb;border-radius:9px;background:#fbfdff;padding:4px;overflow:hidden}
+#lookaheadCanvas{width:100%;height:355px;max-height:none}
+#lookaheadDescription{font-size:12px;background:#f5f8fc;padding:12px;border-radius:6px}
