@@ -4,11 +4,17 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const fmt=d=>new Date(d).toLocaleString(undefined,{dateStyle:'short',timeStyle:'medium'});
 const count=(type)=>results.filter(e=>e.Significance===type).length;
 const hierarchy=new EventHierarchy($('hierarchySvg'),$('detail'),$('hierarchyStatus'));
+const pdag=new EventPDAG($('pdagSvg'),$('pdagDetails'),$('pdagStatus'));
+function selectEvent(id,scroll=false){
+ pdag.select(id);
+ hierarchy.select(id);
+ $('hierarchyPicker').value=hierarchy.selectedId||'';
+ if(scroll)$('detectedPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 const chartHover=new ChartHover($('chart'),$('chartTooltip'));
 chartHover.onSelect=e=>{
-  hierarchy.select(e.Id);
-  $('hierarchyPicker').value=e.Id;
-  $('hierarchyPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  selectEvent(e.Id,true);
 };
 function updateHierarchy(){
  const complex=results.filter(e=>e.CausalVector?.length);
@@ -20,13 +26,15 @@ function updateHierarchy(){
    selector.append(option);
  }
  hierarchy.setEvents(results);
- if(previous && complex.some(e=>e.Id===previous)) hierarchy.select(previous);
+ pdag.setEvents(results);
+ if(previous && complex.some(e=>e.Id===previous)) selectEvent(previous);
+ else if(complex.length)selectEvent(complex[0].Id);
  selector.value=hierarchy.selectedId||'';
  if(!complex.length){
    const option=document.createElement('option');option.textContent='No combined events found';selector.append(option);
  }
 }
-$('hierarchyPicker').addEventListener('change',e=>hierarchy.select(e.target.value));
+$('hierarchyPicker').addEventListener('change',e=>selectEvent(e.target.value));
 $('hierarchyIn').addEventListener('click',()=>hierarchy.zoomBy(1.3));
 $('hierarchyOut').addEventListener('click',()=>hierarchy.zoomBy(1/1.3));
 $('hierarchyFit').addEventListener('click',()=>hierarchy.fit());
@@ -91,7 +99,7 @@ $('zoomOut').addEventListener('click',()=>viewport.zoom(2));
 $('zoomLeft').addEventListener('click',()=>viewport.pan(-.6));
 $('zoomRight').addEventListener('click',()=>viewport.pan(.6));
 $('zoomReset').addEventListener('click',()=>viewport.reset());
-$('events').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;const found=engine.Buffer.GetEvent(tr.dataset.id);if(found){hierarchy.select(found.Id);$('hierarchyPicker').value=found.Id;document.getElementById('hierarchyPanel').scrollIntoView({behavior:'smooth',block:'start'});}});
+$('events').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;selectEvent(tr.dataset.id);});
 $('run').addEventListener('click',run);$('demo').addEventListener('click',()=>{rawEvents=CEP.demoEvents();$('pricesFile').value='';$('newsFile').value='';$('source').textContent='Synthetic demonstration (not original market records)';run();});$('filter').addEventListener('change',renderTable);$('search').addEventListener('input',renderTable);window.addEventListener('resize',()=>{if(engine)drawChart();});
 $('export').addEventListener('click',()=>{const data=JSON.stringify(results,null,2),blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cep-events.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);});
 async function load(){try{const files=[$('pricesFile').files[0],$('newsFile').files[0]];if(!files.some(Boolean))return;const arrays=await Promise.all(files.map(async(f,i)=>f?(i===0?CEP.parsePricesFile(await f.text()):CEP.parseNewsFile(await f.text())):[]));rawEvents=arrays.flat();$('source').textContent=`Imported ${arrays[0].length} prices and ${arrays[1].length} news updates (local browser files)`;run();}catch(err){alert('CSV import failed: '+err.message);}}
