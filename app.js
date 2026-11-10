@@ -41,7 +41,50 @@ $('hierarchyFit').addEventListener('click',()=>hierarchy.fit());
 $('hierarchyDownload').addEventListener('click',()=>hierarchy.downloadSVG());
 function run(){try{engine=new CEP.Engine({priceThreshold:Number($('priceThreshold').value)/100,storyThreshold:Number($('storyThreshold').value)/100,newsWindow:Number($('newsWindow').value)});results=engine.Initialise(rawEvents);render();}catch(err){alert('Could not process event stream: '+err.message);console.error(err);}}
 function render(){const items=[['Price updates',count('Price Update')],['News updates',count('News Update')],['Price jumps / falls',count('Price Jump')+count('Price Fall')],['Complex matches',results.filter(e=>!SIMPLE.includes(e.Significance)).length]];$('stats').innerHTML=items.map(([n,v])=>`<div class="stat"><div class="value">${v}</div><div class="name">${n}</div></div>`).join('');const types=[...new Set(results.map(e=>e.Significance))].sort();const selected=$('filter').value;$('filter').innerHTML='<option value="">All event types</option>'+types.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');$('filter').value=types.includes(selected)?selected:'';renderTable();prepareChart();updateHierarchy();LookAheadUI.setData(results);}
-function renderTable(){const term=$('search').value.toLowerCase(),filter=$('filter').value;const shown=results.filter(e=>(!filter||e.Significance===filter)&&(!term||JSON.stringify(e).toLowerCase().includes(term))).slice(0,3000);$('count').textContent=`${shown.length} of ${results.length} events`; $('events').innerHTML=shown.map(e=>`<tr data-id="${esc(e.Id)}"><td>${esc(fmt(e.TimeStamp))}</td><td><span class="pill ${SIMPLE.includes(e.Significance)?'':'complex'}">${esc(e.Significance)}</span></td><td>${esc(e.PNAC||e.SECURITY||'—')}</td><td>${e.LIST_PRICE!==undefined?Number(e.LIST_PRICE).toFixed(3):'—'}</td><td>${esc(e.HEADLINE_ALERT_TEXT||e.MatchDescription||'')}</td></tr>`).join('');}
+// A stable, type-aware sort acts on the entire filtered set BEFORE the
+// 3000-row rendering cap, so a price/date sort is not restricted to page one.
+const eventSort={key:'timestamp',direction:'asc'};
+const sortCollator=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'});
+function sortValue(e,key){
+ switch(key){
+  case 'timestamp':{const t=+new Date(e.TimeStamp);return Number.isFinite(t)?t:null;}
+  case 'significance':return e.Significance||null;
+  case 'security':return e.PNAC||e.SECURITY||null;
+  case 'price':{if(e.LIST_PRICE===undefined||e.LIST_PRICE===null||e.LIST_PRICE==='')return null;const n=Number(e.LIST_PRICE);return Number.isFinite(n)?n:null;}
+  case 'headline':return e.HEADLINE_ALERT_TEXT||e.MatchDescription||null;
+  default:return null;
+ }
+}
+function compareEvents(a,b,key,dir){
+ const x=sortValue(a,key),y=sortValue(b,key);
+ // Missing values always go last in either direction.
+ if(x==null)return y==null?0:1;
+ if(y==null)return -1;
+ const comparison=typeof x==='number'&&typeof y==='number'?Math.sign(x-y):sortCollator.compare(String(x),String(y));
+ return dir==='asc'?comparison:-comparison;
+}
+function renderTable(){
+ const term=$('search').value.toLowerCase(),filter=$('filter').value;
+ const shown=results.filter(e=>(!filter||e.Significance===filter)&&(!term||JSON.stringify(e).toLowerCase().includes(term)))
+  .map((e,index)=>({e,index}))
+  .sort((a,b)=>compareEvents(a.e,b.e,eventSort.key,eventSort.direction)||a.index-b.index);
+ const visible=shown.slice(0,3000);
+ $('count').textContent=`${visible.length} of ${shown.length} matching events (${results.length} total)`;
+ $('events').innerHTML=visible.map(({e})=>`<tr data-id="${esc(e.Id)}"><td>${esc(fmt(e.TimeStamp))}</td><td><span class="pill ${SIMPLE.includes(e.Significance)?'':'complex'}">${esc(e.Significance)}</span></td><td>${esc(e.PNAC||e.SECURITY||'—')}</td><td>${e.LIST_PRICE!==undefined?Number(e.LIST_PRICE).toFixed(3):'—'}</td><td>${esc(e.HEADLINE_ALERT_TEXT||e.MatchDescription||'')}</td></tr>`).join('');
+ $('detectedPanel').querySelectorAll('th[data-sort]').forEach(th=>{
+   const active=th.dataset.sort===eventSort.key;
+   th.setAttribute('aria-sort',active?(eventSort.direction==='asc'?'ascending':'descending'):'none');
+   th.querySelector('.sort-indicator').textContent=active?(eventSort.direction==='asc'?'▲':'▼'):'↕';
+ });
+}
+$('detectedPanel').addEventListener('click',e=>{
+ const button=e.target.closest('button.event-sort');
+ if(!button)return;
+ const key=button.dataset.sort;
+ eventSort.direction=eventSort.key===key&&eventSort.direction==='asc'?'desc':'asc';
+ eventSort.key=key;
+ renderTable();
+});
 // Keep the plotted data separate from the full event buffer. Viewing a smaller
 // time window should not change what CEP detects.
 let chartPrices=[],chartEvents=[];
