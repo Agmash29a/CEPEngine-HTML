@@ -128,7 +128,7 @@
       if(matches.some(p=>p.event.CausalVector?.length)) {
         const hint=document.createElement('div');
         hint.className='price-tooltip-hint';
-        hint.textContent='Click marker to view its event hierarchy';
+        hint.textContent='Click marker to show its PDAG and event hierarchy';
         root.append(hint);
       }
       root.hidden = false;
