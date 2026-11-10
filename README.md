@@ -130,3 +130,27 @@ The **Prices and detected events** chart now supports interactive time-range nav
 The chart displays the number of records in the visible window and the time range. The rendering path uses binary search to locate visible records and a min/max envelope for dense price lines, so spikes remain visible when many observations fall within one horizontal pixel. Its event-marker lookup no longer scans the full price array for each event.
 
 **Limitations:** The event table and CEP engine still process the complete dataset. The chart does not yet provide separate tracks for each security or virtual scrolling of the event table. Very large datasets may still take time to process before zooming is available.
+
+## Look Ahead (2019 thesis §7.3, Figure 7.1)
+
+An experimental **Look Ahead** panel appears directly under **Prices and detected events**.
+
+The March 2019 thesis introduces *Look Ahead with two predictions* as potential **future work**. It shows a historical price trace, a **Current Time** boundary, and two possible future trajectories, but does **not** provide a specific trained ML model or objective performance result. This web implementation therefore uses explicit, reproducible **historical analogues**, rather than claiming to reproduce a model trained in the thesis.
+
+### Behaviour
+
+1. Import a Price CSV and News CSV; run the existing CEP engine.
+2. Drag **Historical cut-off** to choose the point in history at which predictions are made.
+3. Specify the number of price records to look back, future records to predict, and historical analogues used per scenario.
+4. The algorithm compares recent percentage changes and the count/types of nearby **observed** higher-level CEP events with earlier windows for the **same security**. A historical candidate is eligible **only when its entire subsequent outcome predates the cut-off**.
+5. Alternative **A** uses similar historical outcomes ending non-negative; **B** uses those ending negative. Each is a similarity-weighted average of its candidate paths. A path is omitted when there is insufficient historical evidence.
+6. Optionally display **later actual prices** for an out-of-sample retrospective comparison. The code never uses these later observations when selecting the historical neighbours.
+7. Export the scenarios, cut-off, matched historical source IDs and evaluation statistics as JSON.
+
+These are **illustrative conditional scenarios, not calibrated probabilities**. In particular the degree of visual similarity is **not** a probability of a future move. The later-actual MAE is an exploratory single-window comparison, not demonstrated model accuracy or market forecasting performance.
+
+### Testing data
+
+A separate downloadable **CEPEngine-LookAhead-Test-Data.zip** contains four overlapping paired CSV samples comprising 2–4 complete fictional trading days, with one-minute prices, repeated alternating price movement patterns, three-message completed news stories with shared PNACs, and unfinished news messages. The full four-day pair contains **1,560 prices, 232 news messages, and 72 completed story sequences**. This is carefully designed **synthetic** research test data, not actual financial history.
+
+Existing original CEP rules and SCEP rules remain unchanged.
