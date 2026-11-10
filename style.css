@@ -77,3 +77,11 @@
 #pdagSvg g[role="button"]:hover rect:first-child{filter:drop-shadow(0 2px 4px #9badbd)}
 #pdagSvg g[role="button"]:focus-visible{outline:2px solid #2675b8}
 @media(max-width:650px){.pdag-stage{height:350px}}
+
+/* Detected-events column sorting: keyboard accessible and visible state. */
+#detectedPanel th[data-sort]{padding:0}
+#detectedPanel .event-sort{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:100%;border:0;border-radius:0;background:transparent;color:inherit;padding:9px 10px;text-align:left;font-size:12px;font-weight:700;white-space:nowrap}
+#detectedPanel .event-sort:hover{background:#eaf1fa;color:#1d5b9c}
+#detectedPanel .event-sort:focus-visible{outline:2px solid #2675b8;outline-offset:-2px}
+#detectedPanel .sort-indicator{font-size:11px;min-width:12px;color:#8795a6;text-align:center}
+#detectedPanel th[aria-sort="ascending"] .sort-indicator,#detectedPanel th[aria-sort="descending"] .sort-indicator{color:#1f65aa}
