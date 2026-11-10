@@ -154,3 +154,9 @@ These are **illustrative conditional scenarios, not calibrated probabilities**. 
 A separate downloadable **CEPEngine-LookAhead-Test-Data.zip** contains four overlapping paired CSV samples comprising 2–4 complete fictional trading days, with one-minute prices, repeated alternating price movement patterns, three-message completed news stories with shared PNACs, and unfinished news messages. The full four-day pair contains **1,560 prices, 232 news messages, and 72 completed story sequences**. This is carefully designed **synthetic** research test data, not actual financial history.
 
 Existing original CEP rules and SCEP rules remain unchanged.
+
+## Selected-event PDAG and table placement
+
+**Detected events** now appears immediately below **Prices and detected events**. Select any event row to draw its **Pattern Directed Acyclic Graph (PDAG)** within the same panel. The PDAG shows each ancestor event **once**, even when shared by multiple complex patterns, and connects original price/news inputs through intermediate pattern matches to the chosen result. Nodes are clickable for event-level pattern and source information. Chart marker clicks also select the corresponding event and scroll to this panel; the existing interactive hierarchy visualization remains available lower on the page.
+
+Edges are the event IDs recorded by `CausalVector` in the CEP engine; this represents rule provenance and should not be interpreted as evidence that a news story caused a market price move.
