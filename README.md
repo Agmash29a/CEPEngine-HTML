@@ -168,3 +168,7 @@ On opening `index.html`, CEPEngine-HTML requests `./prices.csv` and `./news.csv`
 Put both files in the deployed site's root alongside `index.html` (names are case-sensitive on some servers). If either file is missing, blocked or invalid, the browser continues with the synthetic demonstration and shows an explanation; manual uploads and the **Load demonstration** button remain available. Manual file selection while the initial downloads are in flight takes priority over the auto-loader.
 
 **Local development:** A plain `file://` opening may block `fetch` due to browser security. Run a local HTTP server in the repository folder, e.g. `python -m http.server 8000`, and open `http://localhost:8000/`. On GitHub Pages, `./prices.csv` and `./news.csv` resolve relative to the deployed app folder. Commit/deploy the CSVs separately if you want them available on the live site; this change does not add data files.
+
+## Collapsible Research section
+
+The three tools **Check the results**, **What does the research say?**, and **Pattern Directed Acyclic Graph (PDAG)** now live within a single **Research** panel, placed below the Look Ahead panel. It uses the browser's native `<details>`/`<summary>` disclosure control and is **collapsed by default**. Select the Research heading to expand it. The original detected-events table remains immediately below the price timeline and outside the collapsible panel. Selecting an event still updates the PDAG while the panel is closed; open Research to inspect the graph.
