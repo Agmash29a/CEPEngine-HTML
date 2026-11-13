@@ -172,3 +172,9 @@ Put both files in the deployed site's root alongside `index.html` (names are cas
 ## Collapsible Research section
 
 The three tools **Check the results**, **What does the research say?**, and **Pattern Directed Acyclic Graph (PDAG)** now live within a single **Research** panel, placed below the Look Ahead panel. It uses the browser's native `<details>`/`<summary>` disclosure control and is **collapsed by default**. Select the Research heading to expand it. The original detected-events table remains immediately below the price timeline and outside the collapsible panel. Selecting an event still updates the PDAG while the panel is closed; open Research to inspect the graph.
+
+## Research panel at the bottom; SCEP and import shimmer
+
+The **Research** panel is now the final section of the app, after the standalone **How was this event detected?** hierarchy. It remains collapsed on first load, and groups **Check the results**, **What does the research say?**, **Pattern Directed Acyclic Graph (PDAG)** and **Understand events using company information (SCEP)**. The original SCEP controls, company facts and semantic hierarchy are unchanged.
+
+A brief blue-white sweep animates the graph surface after a successful price/news CSV import (either automatically from the site root or via file selection) and after SCEP knowledge/events JSON imports. If Research is closed during an import, the shimmer is queued and plays once when Research is opened. Animation is disabled when the user's device requests reduced motion. Imported data and CEP/SCEP detection rules are not modified by the effect.
