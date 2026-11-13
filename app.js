@@ -10,18 +10,88 @@ const pdag=new EventPDAG($('pdagSvg'),$('pdagDetails'),$('pdagStatus'));
 function showEventAttributes(e){
  const holder=$('selectedEventDetails');
  holder.replaceChildren();
- if(!e){$('selectedEventStatus').textContent='No event selected';holder.textContent='Select a row above.';return;}
- $('selectedEventStatus').textContent=e.Significance+' · '+fmt(e.TimeStamp);
- const ordered=['Id','Significance','TimeStamp','SECURITY','PNAC','EVENT_TYPE','LIST_PRICE','AVERAGE_PRICE','TOTAL_VOLUME','HEADLINE_ALERT_TEXT','ACCUMULATED_STORY_TEXT','TAKE_TEXT','PatternInstance','MatchDescription','CausalVector','DAG'];
- const keys=[...new Set([...ordered.filter(k=>e[k]!==undefined),...Object.keys(e).filter(k=>!ordered.includes(k))])];
- for(const key of keys){
-  const field=document.createElement('div');field.className='selected-event-field';
-  const title=document.createElement('div');title.className='selected-event-key';title.textContent=key;
-  const value=document.createElement('div');value.className='selected-event-value';
-  const v=e[key];
-  value.textContent=v instanceof Date?fmt(v):v&&typeof v==='object'?JSON.stringify(v,null,2):String(v??'');
-  field.append(title,value);holder.append(field);
+ if(!e){
+   $('selectedEventStatus').textContent='No event selected';
+   holder.textContent='Select a row to inspect the event and its supporting evidence.';
+   return;
  }
+ const make=(tag,klass,text)=>{
+   const el=document.createElement(tag);
+   if(klass)el.className=klass;
+   if(text!==undefined)el.textContent=text;
+   return el;
+ };
+ const printable=v=>v instanceof Date?fmt(v):v&&typeof v==='object'?JSON.stringify(v,null,2):String(v??'');
+ const present=v=>v!==undefined&&v!==null&&v!=='';
+ const section=(heading,description)=>{
+   const el=make('section','event-detail-section');
+   el.append(make('h4','event-section-heading',heading));
+   if(description)el.append(make('p','event-section-desc',description));
+   holder.append(el);
+   return el;
+ };
+ const metric=(parent,label,value,emphasis=false)=>{
+   if(!present(value))return;
+   const item=make('div','event-metric'+(emphasis?' event-metric-primary':''));
+   item.append(make('div','event-metric-label',label),make('div','event-metric-value',printable(value)));
+   parent.append(item);
+ };
+ const row=(parent,label,value)=>{
+   if(!present(value))return;
+   const item=make('div','event-detail-row');
+   item.append(make('dt','event-detail-label',label),make('dd','event-detail-data',printable(value)));
+   parent.append(item);
+ };
+ const kind=e.CausalVector?.length?'COMPLEX EVENT':'SOURCE EVENT';
+ const hero=make('div','event-hero');
+ const identity=make('div','event-identity');
+ const eyebrow=make('div','event-eyebrow',kind);
+ const name=make('h4','event-hero-title',e.Significance||'Event');
+ const sub=make('p','event-hero-subtitle',fmt(e.TimeStamp));
+ identity.append(eyebrow,name,sub);
+ hero.append(identity);
+ if(e.SECURITY||e.PNAC)hero.append(make('div','event-hero-badge',e.SECURITY||e.PNAC));
+ holder.append(hero);
+ $('selectedEventStatus').textContent='Event '+(e.Id||'')+' · '+kind.toLowerCase();
+ const metrics=make('div','event-metrics');
+ metric(metrics,'List price',e.LIST_PRICE,true);
+ metric(metrics,'Average price',e.AVERAGE_PRICE);
+ metric(metrics,'Volume',e.TOTAL_VOLUME);
+ metric(metrics,'Number of trades',e.NUM_TRADE);
+ if(metrics.children.length)holder.append(metrics);
+ if(present(e.HEADLINE_ALERT_TEXT)){
+   const headline=section('News headline');
+   headline.append(make('p','event-headline',e.HEADLINE_ALERT_TEXT));
+ }
+ const newsRows=[['Story identifier',e.PNAC],['Message type',e.EVENT_TYPE],['Story ID',e.UNIQUE_STORY_INDEX],['Related securities',e.RELATED_RICS],['Topics',e.TOPICS],['Products',e.PRODUCTS],['Attribution',e.ATTRIBUTION]];
+ if(newsRows.some(([,value])=>present(value))){
+   const group=section('News metadata');
+   const dl=make('dl','event-detail-list');newsRows.forEach(([label,value])=>row(dl,label,value));group.append(dl);
+ }
+ if(present(e.MatchDescription)||present(e.PatternInstance)||e.CausalVector?.length){
+   const group=section('Detection and provenance','These are relationships recorded by CEP rules, not proof of real-world causality.');
+   if(present(e.MatchDescription))group.append(make('p','event-rule-description',e.MatchDescription));
+   const dl=make('dl','event-detail-list');
+   row(dl,'Pattern',e.PatternInstance);
+   row(dl,'Source events',e.CausalVector?.length?e.CausalVector.join(', '):undefined);
+   group.append(dl);
+ }
+ const body=[['Accumulated story text',e.ACCUMULATED_STORY_TEXT],['Story text',e.TAKE_TEXT]].filter(([,v])=>present(v));
+ if(body.length){
+   const group=section('Story content');
+   for(const [label,value] of body){
+     group.append(make('h5','event-content-label',label),make('p','event-story-text',printable(value)));
+   }
+ }
+ const extras=make('details','event-raw-details');
+ extras.append(make('summary','event-raw-toggle','All event attributes · raw record'));
+ const raw=make('dl','event-raw-grid');
+ for(const key of Object.keys(e).sort((x,y)=>x.localeCompare(y))){
+   const pair=make('div','event-raw-row');
+   pair.append(make('dt','event-raw-key',key),make('dd','event-raw-value',printable(e[key])));
+   raw.append(pair);
+ }
+ extras.append(raw);holder.append(extras);
 }
 function selectEvent(id,scroll=false){
  const event=results.find(e=>String(e.Id)===String(id));
