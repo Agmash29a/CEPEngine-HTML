@@ -108,3 +108,46 @@
 .graph-shimmer-stage.graph-shimmer-active::after{animation:graph-shimmer 1.35s ease-in-out 1 both}
 @keyframes graph-shimmer{0%{transform:translateX(-130%) skewX(-10deg);opacity:0}16%{opacity:1}82%{opacity:1}100%{transform:translateX(130%) skewX(-10deg);opacity:0}}
 @media(prefers-reduced-motion:reduce){.graph-shimmer-stage.graph-shimmer-active::after{animation:none;opacity:0}}
+
+/* Main price chart — intentionally pronounced, recurring dual light sweeps.
+   Purely decorative layers: no pointer capture, so hover/drag/wheel still work. */
+.price-chart-shimmer{position:relative;isolation:isolate;overflow:hidden;border-radius:8px;background:#f8fbff}
+.price-chart-shimmer::before,.price-chart-shimmer::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;will-change:transform,opacity;opacity:0}
+.price-chart-shimmer::before{
+  background:linear-gradient(107deg,
+    transparent 0%,transparent 17%,
+    rgba(103,181,239,.07) 29%,
+    rgba(117,198,255,.38) 40%,
+    rgba(241,252,255,.80) 47%,
+    rgba(255,255,255,.96) 50%,
+    rgba(134,214,255,.50) 55%,
+    rgba(108,181,244,.14) 69%,
+    transparent 81%);
+  animation:price-chart-sweep 4.1s cubic-bezier(.23,.12,.34,1) infinite;
+}
+.price-chart-shimmer::after{
+  background:linear-gradient(111deg,
+    transparent 23%,
+    rgba(97,179,248,.13) 37%,
+    rgba(220,249,255,.74) 47%,
+    rgba(255,255,255,.94) 50%,
+    rgba(145,207,255,.32) 57%,
+    transparent 77%);
+  animation:price-chart-second-sweep 4.1s ease-in-out infinite;
+}
+@keyframes price-chart-sweep{
+  0%{transform:translateX(-150%);opacity:0}
+  4%{opacity:1}
+  40%{transform:translateX(150%);opacity:1}
+  44%,100%{transform:translateX(150%);opacity:0}
+}
+@keyframes price-chart-second-sweep{
+  0%,48%{transform:translateX(-155%);opacity:0}
+  52%{opacity:.95}
+  89%{transform:translateX(155%);opacity:.95}
+  93%,100%{transform:translateX(155%);opacity:0}
+}
+/* Reduced motion keeps the full chart readable without animation. */
+@media(prefers-reduced-motion:reduce){
+  .price-chart-shimmer::before,.price-chart-shimmer::after{animation:none;opacity:0;will-change:auto}
+}
