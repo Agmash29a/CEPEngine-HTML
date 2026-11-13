@@ -151,3 +151,17 @@
 @media(prefers-reduced-motion:reduce){
   .price-chart-shimmer::before,.price-chart-shimmer::after{animation:none;opacity:0;will-change:auto}
 }
+
+/* Event drill-down is always visible, never hidden in Research. */
+#detectedPanel > .selected-event-panel{border-top:1px solid #e3eaf2;margin-top:18px;padding-top:18px}
+#detectedPanel > .research-pdag{background:#fbfdff;margin-top:16px}
+#detectedPanel > #hierarchyPanel{margin-top:16px;background:#fbfdff}
+#detectedPanel .pdag-inspector{border:0;padding:0;margin:0}
+#detectedPanel .selected-event-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+#detectedPanel .selected-event-field{border:1px solid #e1e9f2;background:#f8fbff;border-radius:7px;padding:9px 11px;min-width:0;overflow-wrap:anywhere}
+#detectedPanel .selected-event-key{font-size:11px;text-transform:uppercase;letter-spacing:.045em;color:#667a94;font-weight:700;margin-bottom:3px}
+#detectedPanel .selected-event-value{font-size:13px;color:#23354d;white-space:pre-wrap;overflow-wrap:anywhere}
+#detectedPanel #events tr[data-id]{cursor:pointer}
+#detectedPanel #events tr[data-id]:hover{background:#eaf4ff}
+#detectedPanel #events tr[aria-selected="true"]{background:#deecfb;box-shadow:inset 3px 0 #2d73b8}
+#detectedPanel #events tr:focus-visible{outline:2px solid #2d73b8;outline-offset:-2px}
