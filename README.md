@@ -160,3 +160,11 @@ Existing original CEP rules and SCEP rules remain unchanged.
 **Detected events** now appears immediately below **Prices and detected events**. Select any event row to draw its **Pattern Directed Acyclic Graph (PDAG)** within the same panel. The PDAG shows each ancestor event **once**, even when shared by multiple complex patterns, and connects original price/news inputs through intermediate pattern matches to the chosen result. Nodes are clickable for event-level pattern and source information. Chart marker clicks also select the corresponding event and scroll to this panel; the existing interactive hierarchy visualization remains available lower on the page.
 
 Edges are the event IDs recorded by `CausalVector` in the CEP engine; this represents rule provenance and should not be interpreted as evidence that a news story caused a market price move.
+
+## Automatic CSV loading at startup
+
+On opening `index.html`, CEPEngine-HTML requests `./prices.csv` and `./news.csv` from the **same folder as index.html** using browser `fetch` requests. Both files are parsed using the normal price and news CSV parsers; the CEP engine is then run and all visualisations are updated. The on-page status message shows the number of imported records. This is a **read-only** operation on the files, and no server-side code is needed.
+
+Put both files in the deployed site's root alongside `index.html` (names are case-sensitive on some servers). If either file is missing, blocked or invalid, the browser continues with the synthetic demonstration and shows an explanation; manual uploads and the **Load demonstration** button remain available. Manual file selection while the initial downloads are in flight takes priority over the auto-loader.
+
+**Local development:** A plain `file://` opening may block `fetch` due to browser security. Run a local HTTP server in the repository folder, e.g. `python -m http.server 8000`, and open `http://localhost:8000/`. On GitHub Pages, `./prices.csv` and `./news.csv` resolve relative to the deployed app folder. Commit/deploy the CSVs separately if you want them available on the live site; this change does not add data files.
