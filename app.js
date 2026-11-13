@@ -5,15 +5,35 @@ const fmt=d=>new Date(d).toLocaleString(undefined,{dateStyle:'short',timeStyle:'
 const count=(type)=>results.filter(e=>e.Significance===type).length;
 const hierarchy=new EventHierarchy($('hierarchySvg'),$('detail'),$('hierarchyStatus'));
 const pdag=new EventPDAG($('pdagSvg'),$('pdagDetails'),$('pdagStatus'));
-$('researchPanel').addEventListener('research:opened',()=>{
- // Ensure SVG layout is sized against its now-visible panel.
- if(pdag.selectedId)pdag.select(pdag.selectedId);
-});
+// Event diagrams are now outside Research and visible at all times.
+// Details and provenance are always displayed directly below the table.
+function showEventAttributes(e){
+ const holder=$('selectedEventDetails');
+ holder.replaceChildren();
+ if(!e){$('selectedEventStatus').textContent='No event selected';holder.textContent='Select a row above.';return;}
+ $('selectedEventStatus').textContent=e.Significance+' · '+fmt(e.TimeStamp);
+ const ordered=['Id','Significance','TimeStamp','SECURITY','PNAC','EVENT_TYPE','LIST_PRICE','AVERAGE_PRICE','TOTAL_VOLUME','HEADLINE_ALERT_TEXT','ACCUMULATED_STORY_TEXT','TAKE_TEXT','PatternInstance','MatchDescription','CausalVector','DAG'];
+ const keys=[...new Set([...ordered.filter(k=>e[k]!==undefined),...Object.keys(e).filter(k=>!ordered.includes(k))])];
+ for(const key of keys){
+  const field=document.createElement('div');field.className='selected-event-field';
+  const title=document.createElement('div');title.className='selected-event-key';title.textContent=key;
+  const value=document.createElement('div');value.className='selected-event-value';
+  const v=e[key];
+  value.textContent=v instanceof Date?fmt(v):v&&typeof v==='object'?JSON.stringify(v,null,2):String(v??'');
+  field.append(title,value);holder.append(field);
+ }
+}
 function selectEvent(id,scroll=false){
- pdag.select(id);
- hierarchy.select(id);
+ const event=results.find(e=>String(e.Id)===String(id));
+ if(!event)return;
+ pdag.select(event.Id);
+ hierarchy.select(event.Id);
  $('hierarchyPicker').value=hierarchy.selectedId||'';
- if(scroll)$('detectedPanel').scrollIntoView({behavior:'smooth',block:'start'});
+ showEventAttributes(event);
+ $('events').querySelectorAll('tr[aria-selected="true"]').forEach(row=>row.removeAttribute('aria-selected'));
+ const selectedRow=[...$('events').querySelectorAll('tr[data-id]')].find(row=>row.dataset.id===String(id));
+ if(selectedRow)selectedRow.setAttribute('aria-selected','true');
+ if(scroll)$('selectedEventPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 const chartHover=new ChartHover($('chart'),$('chartTooltip'));
@@ -24,18 +44,20 @@ function updateHierarchy(){
  const complex=results.filter(e=>e.CausalVector?.length);
  const selector=$('hierarchyPicker'),previous=hierarchy.selectedId;
  selector.replaceChildren();
- for(const e of complex){
+ for(const e of results){
    const option=document.createElement('option');option.value=e.Id;
    option.textContent=(e.Significance==='News Update Plus'?'News near a price rise':e.Significance==='News Update Minus'?'News near a price fall':e.Significance)+' · '+fmt(e.TimeStamp);
    selector.append(option);
  }
  hierarchy.setEvents(results);
  pdag.setEvents(results);
- if(previous && complex.some(e=>e.Id===previous)) selectEvent(previous);
+ if(previous && results.some(e=>e.Id===previous)) selectEvent(previous);
  else if(complex.length)selectEvent(complex[0].Id);
+ else if(results.length)selectEvent(results[0].Id);
+ else showEventAttributes(null);
  selector.value=hierarchy.selectedId||'';
- if(!complex.length){
-   const option=document.createElement('option');option.textContent='No combined events found';selector.append(option);
+ if(!results.length){
+   const option=document.createElement('option');option.textContent='No events found';selector.append(option);
  }
 }
 $('hierarchyPicker').addEventListener('change',e=>selectEvent(e.target.value));
@@ -74,7 +96,12 @@ function renderTable(){
   .sort((a,b)=>compareEvents(a.e,b.e,eventSort.key,eventSort.direction)||a.index-b.index);
  const visible=shown.slice(0,3000);
  $('count').textContent=`${visible.length} of ${shown.length} matching events (${results.length} total)`;
- $('events').innerHTML=visible.map(({e})=>`<tr data-id="${esc(e.Id)}"><td>${esc(fmt(e.TimeStamp))}</td><td><span class="pill ${SIMPLE.includes(e.Significance)?'':'complex'}">${esc(e.Significance)}</span></td><td>${esc(e.PNAC||e.SECURITY||'—')}</td><td>${e.LIST_PRICE!==undefined?Number(e.LIST_PRICE).toFixed(3):'—'}</td><td>${esc(e.HEADLINE_ALERT_TEXT||e.MatchDescription||'')}</td></tr>`).join('');
+ $('events').innerHTML=visible.map(({e})=>`<tr tabindex="0" data-id="${esc(e.Id)}"><td>${esc(fmt(e.TimeStamp))}</td><td><span class="pill ${SIMPLE.includes(e.Significance)?'':'complex'}">${esc(e.Significance)}</span></td><td>${esc(e.PNAC||e.SECURITY||'—')}</td><td>${e.LIST_PRICE!==undefined?Number(e.LIST_PRICE).toFixed(3):'—'}</td><td>${esc(e.HEADLINE_ALERT_TEXT||e.MatchDescription||'')}</td></tr>`).join('');
+ const previousId=pdag.selectedId;
+ if(previousId){
+  const selected=$('events').querySelectorAll('tr[data-id]');
+  for(const row of selected)if(row.dataset.id===String(previousId))row.setAttribute('aria-selected','true');
+ }
  $('detectedPanel').querySelectorAll('th[data-sort]').forEach(th=>{
    const active=th.dataset.sort===eventSort.key;
    th.setAttribute('aria-sort',active?(eventSort.direction==='asc'?'ascending':'descending'):'none');
@@ -146,7 +173,8 @@ $('zoomOut').addEventListener('click',()=>viewport.zoom(2));
 $('zoomLeft').addEventListener('click',()=>viewport.pan(-.6));
 $('zoomRight').addEventListener('click',()=>viewport.pan(.6));
 $('zoomReset').addEventListener('click',()=>viewport.reset());
-$('events').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;selectEvent(tr.dataset.id);});
+$('events').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;selectEvent(tr.dataset.id,true);});
+$('events').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const tr=e.target.closest('tr[data-id]');if(!tr)return;e.preventDefault();selectEvent(tr.dataset.id,true);});
 // A pending startup download must never overwrite a manual upload or a demo
 // selected by the user while the network request is still running.
 let loadGeneration=0;
