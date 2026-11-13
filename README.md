@@ -178,3 +178,9 @@ The three tools **Check the results**, **What does the research say?**, and **Pa
 The **Research** panel is now the final section of the app, after the standalone **How was this event detected?** hierarchy. It remains collapsed on first load, and groups **Check the results**, **What does the research say?**, **Pattern Directed Acyclic Graph (PDAG)** and **Understand events using company information (SCEP)**. The original SCEP controls, company facts and semantic hierarchy are unchanged.
 
 A brief blue-white sweep animates the graph surface after a successful price/news CSV import (either automatically from the site root or via file selection) and after SCEP knowledge/events JSON imports. If Research is closed during an import, the shimmer is queued and plays once when Research is opened. Animation is disabled when the user's device requests reduced motion. Imported data and CEP/SCEP detection rules are not modified by the effect.
+
+## Event details directly below the Detected events list
+
+Selecting a row in **Detected events** now updates three visible sections within that same panel: **Selected event details** (all available original event attributes, including headline and pricing fields), **Pattern Directed Acyclic Graph (PDAG)** (unique source and intermediate events), and **How was this event detected?** (the existing interactive hierarchy and rule explanation). Click or use keyboard Enter/Space on an event row. The selected row is highlighted and the page scrolls to the details. A chart marker also selects and reveals these details.
+
+These event inspection views are **not** inside Research, which continues to contain separate software checks, alternative analysis and SCEP. The PDAG shimmer is immediate on CSV import now that its graph is always visible; SCEP's shimmer remains deferred until Research is expanded.
