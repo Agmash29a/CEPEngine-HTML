@@ -184,3 +184,7 @@ A brief blue-white sweep animates the graph surface after a successful price/new
 Selecting a row in **Detected events** now updates three visible sections within that same panel: **Selected event details** (all available original event attributes, including headline and pricing fields), **Pattern Directed Acyclic Graph (PDAG)** (unique source and intermediate events), and **How was this event detected?** (the existing interactive hierarchy and rule explanation). Click or use keyboard Enter/Space on an event row. The selected row is highlighted and the page scrolls to the details. A chart marker also selects and reveals these details.
 
 These event inspection views are **not** inside Research, which continues to contain separate software checks, alternative analysis and SCEP. The PDAG shimmer is immediate on CSV import now that its graph is always visible; SCEP's shimmer remains deferred until Research is expanded.
+
+## Selected event details presentation
+
+The event inspector directly below **Detected events** now presents a clear event-type header, event timestamp, security/story badge, and any applicable price metrics. News headlines, message metadata, story content and CEP pattern provenance are grouped into separate sections, with an **All event attributes · raw record** disclosure for every underlying value. Source and complex events use the same inspector, but only fields present on the selected event are shown. The layout is responsive and all imported strings are added as text, not HTML.
