@@ -26,20 +26,34 @@
 <pre id="lookaheadDescription" class="detail" aria-live="polite"></pre>
 <p class="muted">A and B are alternative historical-analogue scenarios, not likelihood percentages. Subsequent real observations are excluded from model construction and shown only for comparison. The current CEP rules still generate detections separately.</p>
 </section>
+
+<div class="panel" id="hierarchyPanel">
+<div class="paneltitle"><h2>How was this event detected?</h2><span id="hierarchyStatus">Choose an event in the table</span></div>
+<p class="muted">Follow the lines from original price and news records to the event detected by the program. These are <strong>rule links, not proof of cause and effect</strong>.</p>
+<div class="hierarchy-toolbar">
+<label for="hierarchyPicker">Detected event</label>
+<select id="hierarchyPicker" aria-label="Choose a detected event"></select>
+<button type="button" id="hierarchyOut" aria-label="Zoom out">−</button>
+<button type="button" id="hierarchyIn" aria-label="Zoom in">+</button>
+<button type="button" id="hierarchyFit">Fit to view</button>
+<button type="button" id="hierarchyDownload">Save diagram</button>
+</div>
+<div class="hierarchy-stage"><svg id="hierarchySvg" role="group" aria-label="Interactive diagram of the source events and rule matches" tabindex="0"></svg></div>
+<div class="hierarchy-help">Click a box for details · Use + / − or the mouse wheel to zoom · Drag the empty background to move · Click a circle to hide/show sources</div>
+<div class="hierarchy-explanation" id="detail" aria-live="polite">Choose a detected event to see which observations the engine used.</div>
+</div>
 <details class="panel research-panel" id="researchPanel">
-<summary class="research-summary"><span class="research-title">Research</span><span class="research-summary-hint">Tests, alternative analysis and event PDAG</span><span class="research-chevron" aria-hidden="true">⌄</span></summary>
+<summary class="research-summary"><span class="research-title">Research</span><span class="research-summary-hint">Tests, PDAG and semantic event analysis</span><span class="research-chevron" aria-hidden="true">⌄</span></summary>
 <div class="research-content">
 <div class="panel"><div class="paneltitle"><h2>Check the results</h2><span>Understand what the program found</span></div><div class="buttons" style="display:flex;flex-wrap:wrap;gap:8px"><button id="runTests" style="width:auto">Check for bugs</button><button id="runBench" style="width:auto">Test processing speed</button><button id="exportResearch" style="width:auto">Save test results</button></div><pre id="researchReport" class="detail" aria-live="polite">Run tests or benchmark to inspect the results.</pre></div><div class="panel"><div class="paneltitle"><h2>What does the research say?</h2><span>Alternative rules · easy explanations</span></div><p class="muted">Compare the original program with a research-inspired method. A news story and a price rise occurring together does <strong>not</strong> prove that one caused the other.</p><label for="pointRise">Price increase needed to count as a jump (price points)</label><input id="pointRise" type="number" step="0.5" min="0" value="2" style="max-width:120px"><div class="buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"><button id="compareRules" style="width:auto">Compare detection methods</button><button id="orderCheck" style="width:auto">Check whether message order matters</button><button id="thresholdCheck" style="width:auto">Try different price thresholds</button></div><pre id="insightReport" class="detail" aria-live="polite">Choose a comparison to see what changes and why.</pre><p class="muted">These comparisons are exploratory. They do not measure prediction accuracy or show that news caused a price change.</p></div>
 <section class="panel research-pdag" aria-label="Event pattern directed acyclic graph">
 <section class="pdag-inspector" aria-label="Event pattern directed acyclic graph">
 <div class="paneltitle"><h3>Pattern Directed Acyclic Graph (PDAG)</h3><span id="pdagStatus" aria-live="polite">Select a detected event in the table</span></div>
 <p class="muted">Select any detected event above. This graph shows its unique source observations and intermediate pattern matches, with directed links towards the selected event. Shared ancestors appear once. Links represent rule inputs, not proven real-world causation.</p>
-<div class="pdag-stage"><svg id="pdagSvg" role="group" aria-label="Pattern directed acyclic graph for selected event" tabindex="0"></svg></div>
+<div class="pdag-stage graph-shimmer-stage" id="pdagGraphStage"><svg id="pdagSvg" role="group" aria-label="Pattern directed acyclic graph for selected event" tabindex="0"></svg></div>
 <div id="pdagDetails" class="hierarchy-explanation" aria-live="polite">Choose an event to inspect its provenance.</div>
 </section>
 </section>
-</div>
-</details>
 <section class="panel" id="scepPanel">
   <div class="paneltitle"><h2>Understand events using company information (SCEP)</h2><span>Thesis Chapter 6 · Semantic Complex Event Processing</span></div>
   <p class="muted">Ordinary event detection looks for patterns in prices and news. This mode also checks company information, such as whether a company is a manufacturer, how many staff it has, and its approximate profit. All demonstration values are invented.</p>
@@ -57,22 +71,11 @@
   <p id="scepSource" class="muted">Synthetic sample data supplied for illustration, not real financial evidence.</p>
   <p class="note" id="scepStats" aria-live="polite"></p>
   <h3>Newly detected events</h3><div class="tablewrap"><table><thead><tr><th>Time</th><th>Event</th><th>Company</th><th>Price move</th><th>Industry</th><th>Employees</th></tr></thead><tbody id="scepEvents"></tbody></table></div>
-  <h3>Where did this result come from?</h3><p class="muted">This diagram connects source prices and news to a knowledge-aware result. Company facts appear in the explanation underneath.</p><div class="hierarchy-stage"><svg id="scepHierarchySvg" tabindex="0" aria-label="Semantic event hierarchy" role="group"></svg></div><div class="scep-actions" style="margin-top:8px"><button id="scepHierarchyFit" type="button">Fit diagram</button><button id="scepHierarchySave" type="button">Save diagram</button></div><p id="scepHierarchyStatus" class="muted"></p><div id="scepHierarchyDetails" class="hierarchy-explanation"></div><pre id="scepDetail" class="detail">Select a result above.</pre>
+  <h3>Where did this result come from?</h3><p class="muted">This diagram connects source prices and news to a knowledge-aware result. Company facts appear in the explanation underneath.</p><div class="hierarchy-stage graph-shimmer-stage" id="scepGraphStage"><svg id="scepHierarchySvg" tabindex="0" aria-label="Semantic event hierarchy" role="group"></svg></div><div class="scep-actions" style="margin-top:8px"><button id="scepHierarchyFit" type="button">Fit diagram</button><button id="scepHierarchySave" type="button">Save diagram</button></div><p id="scepHierarchyStatus" class="muted"></p><div id="scepHierarchyDetails" class="hierarchy-explanation"></div><pre id="scepDetail" class="detail">Select a result above.</pre>
   <details><summary>Inspect the background knowledge (facts about companies)</summary><div class="tablewrap"><table><thead><tr><th>Entity</th><th>Relationship / property</th><th>Value</th></tr></thead><tbody id="scepFacts"></tbody></table></div></details>
   <p class="muted">SCEP event links mean “used in this software rule”, not proof that a news report caused a price movement. This browser version supports a limited set of RDF/RDFS-like relationships, not general SPARQL or OWL reasoning.</p>
-</section><div class="panel" id="hierarchyPanel">
-<div class="paneltitle"><h2>How was this event detected?</h2><span id="hierarchyStatus">Choose an event in the table</span></div>
-<p class="muted">Follow the lines from original price and news records to the event detected by the program. These are <strong>rule links, not proof of cause and effect</strong>.</p>
-<div class="hierarchy-toolbar">
-<label for="hierarchyPicker">Detected event</label>
-<select id="hierarchyPicker" aria-label="Choose a detected event"></select>
-<button type="button" id="hierarchyOut" aria-label="Zoom out">−</button>
-<button type="button" id="hierarchyIn" aria-label="Zoom in">+</button>
-<button type="button" id="hierarchyFit">Fit to view</button>
-<button type="button" id="hierarchyDownload">Save diagram</button>
+</section>
 </div>
-<div class="hierarchy-stage"><svg id="hierarchySvg" role="group" aria-label="Interactive diagram of the source events and rule matches" tabindex="0"></svg></div>
-<div class="hierarchy-help">Click a box for details · Use + / − or the mouse wheel to zoom · Drag the empty background to move · Click a circle to hide/show sources</div>
-<div class="hierarchy-explanation" id="detail" aria-live="polite">Choose a detected event to see which observations the engine used.</div>
-</div></section></main>
+</details>
+</section></main>
 <footer>Port of Agmash29a/CEPEngine · Based on original EventBuffer, ActivePatterns, NewsPatterns and event models</footer><script src="cep-engine.js"></script><script src="research-tests.js"></script><script src="research-insights.js"></script><script src="event-hierarchy.js"></script><script src="event-pdag.js"></script><script src="scep-engine.js"></script><script src="scep-ui.js"></script><script src="chart-navigation.js"></script><script src="chart-hover.js"></script><script src="lookahead.js"></script><script src="lookahead-ui.js"></script><script src="app.js"></script></body></html>
