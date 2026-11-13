@@ -1,6 +1,6 @@
 /*
  * One-time light sweep when research graphs receive new data.
- * Hidden diagrams defer the effect until Research is expanded.
+ * Only the SCEP diagram is hidden until Research is expanded.
  */
 (function(global){'use strict';
 const panel=document.getElementById('researchPanel');
@@ -16,7 +16,7 @@ function animate(stage){
 function shimmer(kind){
  const stage=stages[kind];
  if(!stage)return;
- if(!panel.open){pending.add(kind);return;}
+ if(kind==='scep'&&!panel.open){pending.add(kind);return;}
  animate(stage);
 }
 panel.addEventListener('toggle',()=>{
