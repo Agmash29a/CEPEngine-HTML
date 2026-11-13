@@ -188,3 +188,7 @@ These event inspection views are **not** inside Research, which continues to con
 ## Selected event details presentation
 
 The event inspector directly below **Detected events** now presents a clear event-type header, event timestamp, security/story badge, and any applicable price metrics. News headlines, message metadata, story content and CEP pattern provenance are grouped into separate sections, with an **All event attributes · raw record** disclosure for every underlying value. Source and complex events use the same inspector, but only fields present on the selected event are shown. The layout is responsive and all imported strings are added as text, not HTML.
+
+## Collapsible control sidebar
+
+The left-hand Event stream/control sidebar is collapsed by default on every page load, leaving a narrow 52-pixel control rail on desktop and a compact Controls button on narrower screens. Press the Controls button to expand or collapse the existing CSV upload, thresholds, filters and export controls. The toggle uses `aria-expanded` and removes hidden controls from keyboard focus; chart resize handling is invoked after changing layout. The side panel's state is intentionally not persisted, so it starts collapsed again on each page entry.
