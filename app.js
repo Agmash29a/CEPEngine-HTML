@@ -3,6 +3,19 @@
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=d=>new Date(d).toLocaleString(undefined,{dateStyle:'short',timeStyle:'medium'});
 const count=(type)=>results.filter(e=>e.Significance===type).length;
+// Sidebar starts collapsed so charts and event results get maximum space.
+const sidebarLayout=$('appLayout'),sidebarToggle=$('sidebarToggle'),sidebarContent=$('sidebarContent');
+function setSidebar(open){
+ sidebarLayout.classList.toggle('sidebar-collapsed',!open);
+ sidebarToggle.setAttribute('aria-expanded',String(open));
+ sidebarToggle.setAttribute('aria-label',open?'Collapse controls':'Expand controls');
+ sidebarToggle.title=open?'Collapse controls':'Expand controls';
+ sidebarContent.inert=!open;
+ // Charts measure their own canvas width. Recalculate after grid reflow.
+ requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+}
+sidebarToggle.addEventListener('click',()=>setSidebar(sidebarLayout.classList.contains('sidebar-collapsed')));
+
 const hierarchy=new EventHierarchy($('hierarchySvg'),$('detail'),$('hierarchyStatus'));
 const pdag=new EventPDAG($('pdagSvg'),$('pdagDetails'),$('pdagStatus'));
 // Event diagrams are now outside Research and visible at all times.
