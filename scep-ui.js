@@ -10,6 +10,7 @@
  const date=x=>new Date(x).toLocaleString();
  const hierarchy = new EventHierarchy($('scepHierarchySvg'),$('scepHierarchyDetails'),$('scepHierarchyStatus'));
  $('scepHierarchyFit').addEventListener('click',()=>hierarchy.fit());
+ $('researchPanel').addEventListener('research:opened',()=>hierarchy.fit());
  $('scepHierarchySave').addEventListener('click',()=>hierarchy.downloadSVG());
  function rules(){
    const opt=id=>$(id).value.trim();
@@ -51,11 +52,11 @@
  $('scepExportExample').addEventListener('click',()=>exportFile('scep-example-data.json',example));
  $('scepKnowledgeFile').addEventListener('change',async e=>{
    const file=e.target.files[0];if(!file)return;
-   try{const value=JSON.parse(await file.text());kb=new SCEP.KnowledgeBase(Array.isArray(value)?value:value.triples);updateClassChoices();updateFacts();run();$('scepSource').textContent='Loaded company facts: '+file.name;}catch(err){alert('Could not read company facts: '+err.message);}
+   try{const value=JSON.parse(await file.text());kb=new SCEP.KnowledgeBase(Array.isArray(value)?value:value.triples);updateClassChoices();updateFacts();run();$('scepSource').textContent='Loaded company facts: '+file.name;ResearchGraphEffects.shimmer('scep');}catch(err){alert('Could not read company facts: '+err.message);}
  });
  $('scepEventsFile').addEventListener('change',async e=>{
    const file=e.target.files[0];if(!file)return;
-   try{const value=JSON.parse(await file.text());input=Array.isArray(value)?value:value.events;if(!Array.isArray(input))throw Error('Expected an array of events');run();$('scepSource').textContent='Loaded example events: '+file.name;}catch(err){alert('Could not read events: '+err.message);}
+   try{const value=JSON.parse(await file.text());input=Array.isArray(value)?value:value.events;if(!Array.isArray(input))throw Error('Expected an array of events');run();$('scepSource').textContent='Loaded example events: '+file.name;ResearchGraphEffects.shimmer('scep');}catch(err){alert('Could not read events: '+err.message);}
  });
  $('scepEvents').addEventListener('click',e=>{
    const tr=e.target.closest('tr[data-id]');if(!tr||!analysis)return;
