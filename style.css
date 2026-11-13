@@ -85,3 +85,18 @@
 #detectedPanel .event-sort:focus-visible{outline:2px solid #2675b8;outline-offset:-2px}
 #detectedPanel .sort-indicator{font-size:11px;min-width:12px;color:#8795a6;text-align:center}
 #detectedPanel th[aria-sort="ascending"] .sort-indicator,#detectedPanel th[aria-sort="descending"] .sort-indicator{color:#1f65aa}
+
+/* Optional research tools. Collapsed by default using native details/summary. */
+.research-panel{padding:0;overflow:hidden}
+.research-summary{display:flex;align-items:center;gap:12px;cursor:pointer;padding:18px;list-style:none;user-select:none}
+.research-summary::-webkit-details-marker{display:none}
+.research-summary:hover{background:#f7fafd}
+.research-summary:focus-visible{outline:2px solid #256cbd;outline-offset:-3px}
+.research-title{font-weight:750;font-size:16px}
+.research-summary-hint{font-size:12px;color:#697a91;margin-left:auto}
+.research-chevron{font-size:23px;line-height:1;color:#66758a;transition:transform .2s}
+.research-panel[open] .research-chevron{transform:rotate(180deg)}
+.research-content{display:grid;gap:16px;padding:0 18px 18px}
+.research-content > .panel{background:#fcfdff}
+.research-pdag .pdag-inspector{border-top:0;margin-top:0;padding-top:0}
+@media(max-width:650px){.research-summary-hint{display:none}}
