@@ -5,6 +5,10 @@ const fmt=d=>new Date(d).toLocaleString(undefined,{dateStyle:'short',timeStyle:'
 const count=(type)=>results.filter(e=>e.Significance===type).length;
 const hierarchy=new EventHierarchy($('hierarchySvg'),$('detail'),$('hierarchyStatus'));
 const pdag=new EventPDAG($('pdagSvg'),$('pdagDetails'),$('pdagStatus'));
+$('researchPanel').addEventListener('research:opened',()=>{
+ // Ensure SVG layout is sized against its now-visible panel.
+ if(pdag.selectedId)pdag.select(pdag.selectedId);
+});
 function selectEvent(id,scroll=false){
  pdag.select(id);
  hierarchy.select(id);
@@ -165,6 +169,8 @@ async function load(){
   rawEvents=arrays.flat();
   $('source').textContent=`Imported ${arrays[0].length} prices and ${arrays[1].length} news updates (local browser files)`;
   run();
+  ResearchGraphEffects.shimmer('pdag');
+  ResearchGraphEffects.shimmer('scep');
  }catch(err){
   if(generation===loadGeneration)alert('CSV import failed: '+err.message);
  }
@@ -188,6 +194,8 @@ async function loadRootCSVs(){
   rawEvents=[...prices,...news];
   $('source').textContent=`Automatically loaded ${prices.length} prices and ${news.length} news updates from prices.csv and news.csv`;
   run();
+  ResearchGraphEffects.shimmer('pdag');
+  ResearchGraphEffects.shimmer('scep');
  }catch(err){
   if(generation!==loadGeneration)return;
   // Local file:// URLs cannot fetch adjacent files in most browsers.
