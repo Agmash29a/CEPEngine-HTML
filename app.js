@@ -143,9 +143,61 @@ $('zoomLeft').addEventListener('click',()=>viewport.pan(-.6));
 $('zoomRight').addEventListener('click',()=>viewport.pan(.6));
 $('zoomReset').addEventListener('click',()=>viewport.reset());
 $('events').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;selectEvent(tr.dataset.id);});
-$('run').addEventListener('click',run);$('demo').addEventListener('click',()=>{rawEvents=CEP.demoEvents();$('pricesFile').value='';$('newsFile').value='';$('source').textContent='Synthetic demonstration (not original market records)';run();});$('filter').addEventListener('change',renderTable);$('search').addEventListener('input',renderTable);window.addEventListener('resize',()=>{if(engine)drawChart();});
+// A pending startup download must never overwrite a manual upload or a demo
+// selected by the user while the network request is still running.
+let loadGeneration=0;
+$('run').addEventListener('click',run);
+$('demo').addEventListener('click',()=>{
+ loadGeneration++;
+ rawEvents=CEP.demoEvents();
+ $('pricesFile').value='';$('newsFile').value='';
+ $('source').textContent='Synthetic demonstration (not original market records)';
+ run();
+});$('filter').addEventListener('change',renderTable);$('search').addEventListener('input',renderTable);window.addEventListener('resize',()=>{if(engine)drawChart();});
 $('export').addEventListener('click',()=>{const data=JSON.stringify(results,null,2),blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cep-events.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);});
-async function load(){try{const files=[$('pricesFile').files[0],$('newsFile').files[0]];if(!files.some(Boolean))return;const arrays=await Promise.all(files.map(async(f,i)=>f?(i===0?CEP.parsePricesFile(await f.text()):CEP.parseNewsFile(await f.text())):[]));rawEvents=arrays.flat();$('source').textContent=`Imported ${arrays[0].length} prices and ${arrays[1].length} news updates (local browser files)`;run();}catch(err){alert('CSV import failed: '+err.message);}}
+async function load(){
+ const generation=++loadGeneration;
+ try{
+  const files=[$('pricesFile').files[0],$('newsFile').files[0]];
+  if(!files.some(Boolean))return;
+  const arrays=await Promise.all(files.map(async(f,i)=>f?(i===0?CEP.parsePricesFile(await f.text()):CEP.parseNewsFile(await f.text())):[]));
+  if(generation!==loadGeneration)return;
+  rawEvents=arrays.flat();
+  $('source').textContent=`Imported ${arrays[0].length} prices and ${arrays[1].length} news updates (local browser files)`;
+  run();
+ }catch(err){
+  if(generation===loadGeneration)alert('CSV import failed: '+err.message);
+ }
+}
+// Automatically load both CSV files from the directory serving index.html.
+// ./ rather than / also supports deployments in a subfolder of a website.
+async function loadRootCSVs(){
+ const generation=++loadGeneration;
+ $('source').textContent='Loading prices.csv and news.csv from the site root…';
+ try{
+  const urls=['./prices.csv','./news.csv'];
+  const csv=await Promise.all(urls.map(async url=>{
+   const response=await fetch(url,{cache:'no-cache'});
+   if(!response.ok)throw Error(url+' returned HTTP '+response.status);
+   return response.text();
+  }));
+  const prices=CEP.parsePricesFile(csv[0]);
+  const news=CEP.parseNewsFile(csv[1]);
+  if(!prices.length)throw Error('prices.csv contained no valid price records');
+  if(generation!==loadGeneration)return;
+  rawEvents=[...prices,...news];
+  $('source').textContent=`Automatically loaded ${prices.length} prices and ${news.length} news updates from prices.csv and news.csv`;
+  run();
+ }catch(err){
+  if(generation!==loadGeneration)return;
+  // Local file:// URLs cannot fetch adjacent files in most browsers.
+  // Missing files or blocked fetches leave a working synthetic demo.
+  console.warn('Could not automatically load root CSV files:',err);
+  rawEvents=CEP.demoEvents();
+  $('source').textContent='Root CSV auto-load unavailable ('+err.message+'). Showing synthetic demonstration. You can still upload CSV files manually.';
+  run();
+ }
+}
 let researchReport={regression:[],benchmark:[],source:'Synthetic regression fixtures derived from C# patterns; no private Academia research data included'};
 $('runTests').addEventListener('click',()=>{researchReport.regression=CEPResearch.runRegression();const passed=researchReport.regression.filter(t=>t.passed).length;$('researchReport').textContent='Software checks: '+passed+'/'+researchReport.regression.length+' passed\\n\\n'+researchReport.regression.map(t=>(t.passed?'PASS ':'FAIL ')+t.name+(t.error?' — '+t.error:'')).join('\\n');});
 $('runBench').addEventListener('click',()=>{const result=CEPResearch.benchmark();researchReport.benchmark=result;$('researchReport').textContent='Processing speed on this computer (middle of three runs)\\n'+result.map(r=>r.inputEvents+' inputs | '+r.outputEvents+' outputs | '+r.medianMilliseconds+' ms | '+r.eventsPerSecond+' events/second').join('\\n')+'\\n\\nThese results are specific to this device/browser, and are not historical validation.';});
@@ -153,4 +205,4 @@ $('exportResearch').addEventListener('click',()=>{const blob=new Blob([JSON.stri
 $('compareRules').addEventListener('click',()=>{const original=engine.ShowAllEvents(),v=CEPInsights.compare(rawEvents,{points:Number($('pointRise').value)});$('insightReport').textContent='Original method: '+(original['Price Jump']||0)+' price jumps, '+(original['News Story']||0)+' completed stories.\nAlternative method: '+v.priceJumps+' price jumps, '+v.stories+' story groups, '+v.newsAndPriceMatches+' news/price matches.\n'+v.singleMessageStories+' story groups have only ONE message (not proof of a completed story).\n\n'+v.notes.join('\n');});
 $('orderCheck').addEventListener('click',()=>{const v=CEPInsights.orderingCheck(rawEvents,{points:Number($('pointRise').value)});$('insightReport').textContent=(v.sameCounts?'Counts stayed the same.':'WARNING: Some counts changed when input order was reversed.')+'\nOriginal: '+JSON.stringify({jumps:v.original.priceJumps,stories:v.original.stories,matches:v.original.newsAndPriceMatches})+'\nReversed: '+JSON.stringify({jumps:v.reversed.priceJumps,stories:v.reversed.stories,matches:v.reversed.newsAndPriceMatches})+'\n'+v.notice;});
 $('thresholdCheck').addEventListener('click',()=>{const rows=CEPInsights.thresholdCheck(rawEvents);$('insightReport').textContent='How changing the minimum price rise changes what is detected:\n'+rows.map(r=>r.priceRiseNeeded+' points: '+r.priceJumps+' jumps, '+r.newsAndPriceMatches+' news/price matches').join('\n')+'\nThese are different rules, not estimates of forecast accuracy.';});
-$('pricesFile').addEventListener('change',load);$('newsFile').addEventListener('change',load);run();})();
+$('pricesFile').addEventListener('change',load);$('newsFile').addEventListener('change',load);loadRootCSVs();})();
