@@ -198,3 +198,25 @@
 #detectedPanel .event-raw-key{color:#66788e;font-size:11px;font-family:ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
 #detectedPanel .event-raw-value{margin:0;color:#243952;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;font-family:ui-monospace,Consolas,monospace}
 @media(max-width:650px){#detectedPanel .event-hero{padding:15px;align-items:flex-start;flex-direction:column}#detectedPanel .event-hero-badge{max-width:100%}#detectedPanel .event-raw-row{grid-template-columns:1fr;gap:2px}}
+
+/* Compact collapsible sidebar, closed from the first render. */
+#appLayout{grid-template-columns:280px minmax(0,1fr);transition:grid-template-columns .24s ease}
+#appLayout.sidebar-collapsed{grid-template-columns:52px minmax(0,1fr)}
+#sidebar{padding:0;min-width:0;overflow:hidden}
+#sidebar .sidebar-toggle-bar{padding:10px 8px;display:flex;align-items:center;min-height:52px}
+#sidebar .sidebar-toggle{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #dbe4ef;border-radius:7px;background:#f7faff;padding:9px 6px;min-height:36px;white-space:nowrap}
+#sidebar .sidebar-toggle:hover{background:#eaf3ff;border-color:#b9d3ee}
+#sidebar .sidebar-toggle-icon{font-size:17px;line-height:1}
+#sidebar .sidebar-toggle-label{font-size:12px;font-weight:700}
+#sidebar .sidebar-content{padding:0 22px 22px;min-width:0}
+#appLayout.sidebar-collapsed #sidebar .sidebar-content{display:none}
+#appLayout.sidebar-collapsed #sidebar .sidebar-toggle-label{display:none}
+@media(max-width:850px){
+ #appLayout{grid-template-columns:minmax(0,1fr);transition:none}
+ #appLayout.sidebar-collapsed{grid-template-columns:minmax(0,1fr)}
+ #sidebar{border-right:0;border-bottom:1px solid #dce3eb}
+ #sidebar .sidebar-toggle-bar{justify-content:flex-start;min-height:48px}
+ #sidebar .sidebar-toggle{width:auto;padding:8px 12px}
+ #appLayout.sidebar-collapsed #sidebar .sidebar-toggle-label{display:inline}
+}
+@media(prefers-reduced-motion:reduce){#appLayout{transition:none}}
