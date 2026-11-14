@@ -44,11 +44,17 @@
     constructor(canvas, tooltip) {
       this.canvas = canvas;
       this.tooltip = tooltip;
+      // The shimmer surface creates an isolated stacking context. Keep the
+      // fixed-position tooltip at document level so sticky table headings
+      // and panel overflow cannot cover or clip it.
+      document.body.appendChild(tooltip);
       this.points = [];
       this.current = null;
       canvas.addEventListener('pointermove', e => this.move(e));
       canvas.addEventListener('pointerleave', () => this.hide());
       canvas.addEventListener('pointercancel', () => this.hide());
+      window.addEventListener('scroll', () => this.hide(), {capture:true,passive:true});
+      window.addEventListener('resize', () => this.hide());
       canvas.addEventListener('click', e => {
         const matches = this.find(e);
         if (!matches.length) return;

@@ -161,13 +161,9 @@ Existing original CEP rules and SCEP rules remain unchanged.
 
 Edges are the event IDs recorded by `CausalVector` in the CEP engine; this represents rule provenance and should not be interpreted as evidence that a news story caused a market price move.
 
-## Automatic CSV loading at startup
+## Demonstration startup and manual CSV loading
 
-On opening `index.html`, CEPEngine-HTML requests `./prices.csv` and `./news.csv` from the **same folder as index.html** using browser `fetch` requests. Both files are parsed using the normal price and news CSV parsers; the CEP engine is then run and all visualisations are updated. The on-page status message shows the number of imported records. This is a **read-only** operation on the files, and no server-side code is needed.
-
-Put both files in the deployed site's root alongside `index.html` (names are case-sensitive on some servers). If either file is missing, blocked or invalid, the browser continues with the bundled WWDC demonstration and shows an explanation; manual uploads and the **Load demonstration** button remain available. Manual file selection while the initial downloads are in flight takes priority over the auto-loader.
-
-**Local development:** A plain `file://` opening may block `fetch` due to browser security. Run a local HTTP server in the repository folder, e.g. `python -m http.server 8000`, and open `http://localhost:8000/`. On GitHub Pages, `./prices.csv` and `./news.csv` resolve relative to the deployed app folder. Commit/deploy the CSVs separately if you want them available on the live site; this change does not add data files.
+On opening `index.html`, the app runs the built-in WWDC demonstration from `demo-data.js`. It makes no automatic requests for `prices.csv` or `news.csv`. Use the two CSV upload controls to load other data manually; **Load demonstration** restores the built-in sample. The demonstration works when opened directly from disk.
 
 ## Collapsible Research section
 
@@ -199,8 +195,8 @@ The left-hand Event stream/control sidebar is collapsed by default on every page
 - News story price move: **0.1%**.
 - How close news must be: **5 minutes**.
 - Price move needed remains **0.05%**.
-- Startup loads the root CSVs, currently the original Pfizer January 2003 pair (8,229 prices and 289 news messages). **Load demonstration** restores the bundled WWDC sample (190 prices and 40 news messages).
-- `demo-data.js` embeds the WWDC CSV content so the demonstration also works offline with `file://` when root CSV fetches are blocked. If you replace the root CSVs, the button still restores this bundled demonstration.
+- Startup and **Load demonstration** both use the bundled WWDC sample (190 prices and 40 news messages).
+- `demo-data.js` embeds the WWDC CSV content, so the demonstration also works offline with `file://`. Root CSV files are not loaded automatically.
 - Expected results at these defaults: 5 News Story, 2 News Story Plus, 1 News Story Minus, 22 News Update Plus, 25 News Update Minus, 36 Price Jump and 42 Price Fall.
 - The two uploaded news copies were byte-identical; only one is included as `news.csv`.
 - Times are New York daylight time (EDT), 6 June 2022, DD/MM/YYYY. Temporal matches do not establish causality.
@@ -208,3 +204,7 @@ The left-hand Event stream/control sidebar is collapsed by default on every page
 ## Curved price chart
 
 The price trace uses monotone cubic curves through the plotted prices, avoiding artificial peaks and dips between neighbours. Event markers and detection rules retain their existing values.
+
+## Rendering and hover feedback
+
+While the engine processes data and draws the graph, controls are locked and the main panel shows Rendering. The lock clears on completion or error. Graph tooltips are attached at document level so sticky event-table headings cannot cover them.

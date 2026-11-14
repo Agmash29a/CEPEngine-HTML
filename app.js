@@ -148,7 +148,53 @@ $('hierarchyIn').addEventListener('click',()=>hierarchy.zoomBy(1.3));
 $('hierarchyOut').addEventListener('click',()=>hierarchy.zoomBy(1/1.3));
 $('hierarchyFit').addEventListener('click',()=>hierarchy.fit());
 $('hierarchyDownload').addEventListener('click',()=>hierarchy.downloadSVG());
-function run(){try{engine=new CEP.Engine({priceThreshold:Number($('priceThreshold').value)/100,storyThreshold:Number($('storyThreshold').value)/100,newsWindow:Number($('newsWindow').value)});results=engine.Initialise(rawEvents);render();}catch(err){alert('Could not process event stream: '+err.message);console.error(err);}}
+// Paint the busy state before synchronous CEP work blocks the browser thread.
+const renderPanel=$('chart').closest('.panel');
+renderPanel.style.position='relative';
+const renderOverlay=document.createElement('div');
+renderOverlay.hidden=true;
+renderOverlay.setAttribute('aria-hidden','true');
+renderOverlay.style.cssText='position:absolute;inset:0;z-index:20;background:rgba(245,247,250,.88);align-items:center;justify-content:center;border-radius:inherit;cursor:wait;font:600 20px system-ui;color:#1f3b64;';
+renderOverlay.textContent='Rendering…';
+renderPanel.append(renderOverlay);
+// Keep the announcement outside the inert application controls.
+const renderStatus=document.createElement('div');
+renderStatus.setAttribute('role','status');renderStatus.setAttribute('aria-live','polite');
+renderStatus.style.cssText='position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;';
+document.body.append(renderStatus);
+let isRendering=false,renderAgain=false,renderTask=null;
+const paintFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+function run(){
+ if(isRendering){renderAgain=true;return renderTask;}
+ isRendering=true;
+ const layout=$('appLayout'),previousInert=layout.inert,previousFocus=document.activeElement;
+ layout.inert=true;renderPanel.setAttribute('aria-busy','true');
+ renderOverlay.hidden=false;renderOverlay.style.display='flex';
+ renderStatus.textContent='Rendering';
+ renderTask=(async()=>{
+  let failure=null;
+  try{
+   do{
+    renderAgain=false;
+    const source=rawEvents.slice();
+    const options={priceThreshold:Number($('priceThreshold').value)/100,storyThreshold:Number($('storyThreshold').value)/100,newsWindow:Number($('newsWindow').value)};
+    await paintFrame();
+    engine=new CEP.Engine(options);results=engine.Initialise(source);render();
+    // Retain the lock until the freshly drawn graph has had a paint opportunity.
+    await paintFrame();
+   }while(renderAgain);
+  }catch(err){failure=err;console.error(err);}
+  finally{
+   renderOverlay.hidden=true;renderOverlay.style.display='none';
+   renderPanel.setAttribute('aria-busy','false');layout.inert=previousInert;
+   isRendering=false;renderTask=null;
+   renderStatus.textContent=failure?'Rendering failed':'Rendering complete';
+   if(previousFocus?.isConnected&&!previousInert)previousFocus.focus({preventScroll:true});
+  }
+  if(failure)alert('Could not process event stream: '+failure.message);
+ })();
+ return renderTask;
+}
 function render(){const items=[['Price updates',count('Price Update')],['News updates',count('News Update')],['Price jumps / falls',count('Price Jump')+count('Price Fall')],['Complex matches',results.filter(e=>!SIMPLE.includes(e.Significance)).length]];$('stats').innerHTML=items.map(([n,v])=>`<div class="stat"><div class="value">${v}</div><div class="name">${n}</div></div>`).join('');const types=[...new Set(results.map(e=>e.Significance))].sort();const selected=$('filter').value;$('filter').innerHTML='<option value="">All event types</option>'+types.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');$('filter').value=types.includes(selected)?selected:'';renderTable();prepareChart();updateHierarchy();LookAheadUI.setData(results);}
 // A stable, type-aware sort acts on the entire filtered set BEFORE the
 // 3000-row rendering cap, so a price/date sort is not restricted to page one.
@@ -300,8 +346,7 @@ $('zoomRight').addEventListener('click',()=>viewport.pan(.6));
 $('zoomReset').addEventListener('click',()=>viewport.reset());
 $('events').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;selectEvent(tr.dataset.id,true);});
 $('events').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const tr=e.target.closest('tr[data-id]');if(!tr)return;e.preventDefault();selectEvent(tr.dataset.id,true);});
-// A pending startup download must never overwrite a manual upload or a demo
-// selected by the user while the network request is still running.
+// A pending manual upload must not overwrite a newer upload or demo selection.
 let loadGeneration=0;
 $('run').addEventListener('click',run);
 $('demo').addEventListener('click',()=>{
@@ -328,37 +373,6 @@ async function load(){
   if(generation===loadGeneration)alert('CSV import failed: '+err.message);
  }
 }
-// Automatically load both CSV files from the directory serving index.html.
-// ./ rather than / also supports deployments in a subfolder of a website.
-async function loadRootCSVs(){
- const generation=++loadGeneration;
- $('source').textContent='Loading prices.csv and news.csv from the site root…';
- try{
-  const urls=['./prices.csv','./news.csv'];
-  const csv=await Promise.all(urls.map(async url=>{
-   const response=await fetch(url,{cache:'no-cache'});
-   if(!response.ok)throw Error(url+' returned HTTP '+response.status);
-   return response.text();
-  }));
-  const prices=CEP.parsePricesFile(csv[0]);
-  const news=CEP.parseNewsFile(csv[1]);
-  if(!prices.length)throw Error('prices.csv contained no valid price records');
-  if(generation!==loadGeneration)return;
-  rawEvents=[...prices,...news];
-  $('source').textContent=`Automatically loaded ${prices.length} prices and ${news.length} news updates from prices.csv and news.csv`;
-  run();
-  ResearchGraphEffects.shimmer('pdag');
-  ResearchGraphEffects.shimmer('scep');
- }catch(err){
-  if(generation!==loadGeneration)return;
-  // Local file:// URLs cannot fetch adjacent files in most browsers.
-  // Missing files or blocked fetches leave a working bundled WWDC demo.
-  console.warn('Could not automatically load root CSV files:',err);
-  rawEvents=CEP.demoEvents();
-  $('source').textContent='Root CSV auto-load unavailable ('+err.message+'). Showing bundled WWDC 2022 demonstration (adapted story groups). You can still upload CSV files manually.';
-  run();
- }
-}
 let researchReport={regression:[],benchmark:[],source:'Synthetic regression fixtures derived from C# patterns; no private Academia research data included'};
 $('runTests').addEventListener('click',()=>{researchReport.regression=CEPResearch.runRegression();const passed=researchReport.regression.filter(t=>t.passed).length;$('researchReport').textContent='Software checks: '+passed+'/'+researchReport.regression.length+' passed\\n\\n'+researchReport.regression.map(t=>(t.passed?'PASS ':'FAIL ')+t.name+(t.error?' — '+t.error:'')).join('\\n');});
 $('runBench').addEventListener('click',()=>{const result=CEPResearch.benchmark();researchReport.benchmark=result;$('researchReport').textContent='Processing speed on this computer (middle of three runs)\\n'+result.map(r=>r.inputEvents+' inputs | '+r.outputEvents+' outputs | '+r.medianMilliseconds+' ms | '+r.eventsPerSecond+' events/second').join('\\n')+'\\n\\nThese results are specific to this device/browser, and are not historical validation.';});
@@ -366,4 +380,6 @@ $('exportResearch').addEventListener('click',()=>{const blob=new Blob([JSON.stri
 $('compareRules').addEventListener('click',()=>{const original=engine.ShowAllEvents(),v=CEPInsights.compare(rawEvents,{points:Number($('pointRise').value)});$('insightReport').textContent='Original method: '+(original['Price Jump']||0)+' price jumps, '+(original['News Story']||0)+' completed stories.\nAlternative method: '+v.priceJumps+' price jumps, '+v.stories+' story groups, '+v.newsAndPriceMatches+' news/price matches.\n'+v.singleMessageStories+' story groups have only ONE message (not proof of a completed story).\n\n'+v.notes.join('\n');});
 $('orderCheck').addEventListener('click',()=>{const v=CEPInsights.orderingCheck(rawEvents,{points:Number($('pointRise').value)});$('insightReport').textContent=(v.sameCounts?'Counts stayed the same.':'WARNING: Some counts changed when input order was reversed.')+'\nOriginal: '+JSON.stringify({jumps:v.original.priceJumps,stories:v.original.stories,matches:v.original.newsAndPriceMatches})+'\nReversed: '+JSON.stringify({jumps:v.reversed.priceJumps,stories:v.reversed.stories,matches:v.reversed.newsAndPriceMatches})+'\n'+v.notice;});
 $('thresholdCheck').addEventListener('click',()=>{const rows=CEPInsights.thresholdCheck(rawEvents);$('insightReport').textContent='How changing the minimum price rise changes what is detected:\n'+rows.map(r=>r.priceRiseNeeded+' points: '+r.priceJumps+' jumps, '+r.newsAndPriceMatches+' news/price matches').join('\n')+'\nThese are different rules, not estimates of forecast accuracy.';});
-$('pricesFile').addEventListener('change',load);$('newsFile').addEventListener('change',load);loadRootCSVs();})();
+$('pricesFile').addEventListener('change',load);$('newsFile').addEventListener('change',load);
+$('source').textContent='WWDC 2022 demonstration: 190 prices and 40 news updates; story groups and completion labels adapted for testing';
+run();})();
