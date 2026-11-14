@@ -126,7 +126,7 @@
     get MaxDate(){return new Date(Math.max(...this.EventBuffer.map(e=>stamp(e.TimeStamp))));}
   }
   class Engine {
-    constructor(options={}){this.options={priceThreshold:.0005,storyThreshold:.025,newsWindow:30,bufferSize:100000,...options};this.Buffer=new Buffer(this.options.bufferSize);}
+    constructor(options={}){this.options={priceThreshold:.0005,storyThreshold:.001,newsWindow:5,bufferSize:100000,...options};this.Buffer=new Buffer(this.options.bufferSize);}
     Initialise(sourceEvents){
       // Add Complex event pattern definitions. The order follows Engine.Initialise.
       const o=this.options,b=this.Buffer;b.EventBuffer=[];
@@ -170,12 +170,9 @@
     }).filter(e=>Number.isFinite(stamp(e.TimeStamp)));
   }
   function demoEvents(){
-    // Demonstration records are synthetic, not extracted from the original database.
-    const start=new Date(2026,0,12,9,0);const at=m=>new Date(start.getTime()+m*60000);
-    const ps=[100,100.1,100.4,100.45,97.5,97.6,101,101.2,98.4,99.2,104,103.1];
-    const prices=ps.map((p,i)=>makeEvent('Price Update',at(i*10),{SECURITY:'GER',LIST_PRICE:p,NUM_TRADE:10+i,AVERAGE_PRICE:p,TOTAL_VOLUME:1000+i*50}));
-    const news=[{m:5,p:'PNAC-101',t:'HEADLINE',h:'Example: company announces product update'},{m:18,p:'PNAC-101',t:'STORY_TAKE_OVERWRITE',h:'Example: full product announcement'},{m:37,p:'PNAC-102',t:'ALERT',h:'Example: market announcement'},{m:52,p:'PNAC-102',t:'STORY_TAKE_OVERWRITE',h:'Example: market update finalised'},{m:87,p:'PNAC-103',t:'HEADLINE',h:'Example: trading statement'},{m:98,p:'PNAC-103',t:'STORY_TAKE_OVERWRITE',h:'Example: final trading statement'}].map(n=>makeEvent('News Update',at(n.m),{PNAC:n.p,EVENT_TYPE:n.t,HEADLINE_ALERT_TEXT:n.h,RELATED_RICS:['GER']}));
-    return [...prices,...news];
+    const data=global.CEPDemoData;
+    if(!data)throw Error('Bundled WWDC demonstration data is missing (demo-data.js)');
+    return [...parsePricesFile(data.prices),...parseNewsFile(data.news)];
   }
   global.CEP={Engine,Buffer,Pattern,DAG,EVENT_TYPES,parseCSV,parsePricesFile,parseNewsFile,demoEvents,makeEvent};
 })(window);

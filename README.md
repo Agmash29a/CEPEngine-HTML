@@ -20,7 +20,7 @@ Expected news CSV has at least 19 columns in the positional order of the origina
 
 Dates are parsed as day/month/year for slash-formatted values, which is appropriate for the original C# implementation under Australian locale settings; ISO timestamps are also supported where possible.
 
-The included demo data is **synthetic**; it is not asserted to be original stock-market data.
+The **Load demonstration** button uses the supplied **WWDC 2022** data: 190 AAPL prices and 40 news messages on 6 June 2022. Prices and publication times are preserved; story IDs and completion labels are demo annotations, not authenticated newswire revisions. The original price provider is unverified.
 
 ## Porting notes
 Patterns retained: `PriceChangedPositive`, `PriceChangedNegative`, `PriceChangedPositiveWithNewsUpdate`, `PriceChangedNegativeWithNewsUpdate`, `BasicStory`, `PriceChangedPositiveBasicStory`, `PriceChangedNegativeBasicStory`.
@@ -165,7 +165,7 @@ Edges are the event IDs recorded by `CausalVector` in the CEP engine; this repre
 
 On opening `index.html`, CEPEngine-HTML requests `./prices.csv` and `./news.csv` from the **same folder as index.html** using browser `fetch` requests. Both files are parsed using the normal price and news CSV parsers; the CEP engine is then run and all visualisations are updated. The on-page status message shows the number of imported records. This is a **read-only** operation on the files, and no server-side code is needed.
 
-Put both files in the deployed site's root alongside `index.html` (names are case-sensitive on some servers). If either file is missing, blocked or invalid, the browser continues with the synthetic demonstration and shows an explanation; manual uploads and the **Load demonstration** button remain available. Manual file selection while the initial downloads are in flight takes priority over the auto-loader.
+Put both files in the deployed site's root alongside `index.html` (names are case-sensitive on some servers). If either file is missing, blocked or invalid, the browser continues with the bundled WWDC demonstration and shows an explanation; manual uploads and the **Load demonstration** button remain available. Manual file selection while the initial downloads are in flight takes priority over the auto-loader.
 
 **Local development:** A plain `file://` opening may block `fetch` due to browser security. Run a local HTTP server in the repository folder, e.g. `python -m http.server 8000`, and open `http://localhost:8000/`. On GitHub Pages, `./prices.csv` and `./news.csv` resolve relative to the deployed app folder. Commit/deploy the CSVs separately if you want them available on the live site; this change does not add data files.
 
@@ -192,3 +192,19 @@ The event inspector directly below **Detected events** now presents a clear even
 ## Collapsible control sidebar
 
 The left-hand Event stream/control sidebar is collapsed by default on every page load, leaving a narrow 52-pixel control rail on desktop and a compact Controls button on narrower screens. Press the Controls button to expand or collapse the existing CSV upload, thresholds, filters and export controls. The toggle uses `aria-expanded` and removes hidden controls from keyboard focus; chart resize handling is invoked after changing layout. The side panel's state is intentionally not persisted, so it starts collapsed again on each page entry.
+
+
+## WWDC demonstration defaults
+
+- News story price move: **0.1%**.
+- How close news must be: **5 minutes**.
+- Price move needed remains **0.05%**.
+- Startup loads the root CSVs, currently the original Pfizer January 2003 pair (8,229 prices and 289 news messages). **Load demonstration** restores the bundled WWDC sample (190 prices and 40 news messages).
+- `demo-data.js` embeds the WWDC CSV content so the demonstration also works offline with `file://` when root CSV fetches are blocked. If you replace the root CSVs, the button still restores this bundled demonstration.
+- Expected results at these defaults: 5 News Story, 2 News Story Plus, 1 News Story Minus, 22 News Update Plus, 25 News Update Minus, 36 Price Jump and 42 Price Fall.
+- The two uploaded news copies were byte-identical; only one is included as `news.csv`.
+- Times are New York daylight time (EDT), 6 June 2022, DD/MM/YYYY. Temporal matches do not establish causality.
+
+## Curved price chart
+
+The price trace uses monotone cubic curves through the plotted prices, avoiding artificial peaks and dips between neighbours. Event markers and detection rules retain their existing values.

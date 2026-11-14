@@ -213,6 +213,28 @@ function prepareChart(){
  else {chartHover.setPoints([]);viewport.setDomain(0,1);}
 }
 function lowerBound(items,t){let lo=0,hi=items.length;while(lo<hi){const m=(lo+hi)>>>1;if(items[m].t<t)lo=m+1;else hi=m;}return lo;}
+// Monotone cubic interpolation passes through every plotted value without
+// inventing peaks or dips between neighbouring prices.
+function curvedPricePath(context,points,x,y){
+ if(!points.length)return;
+ const nodes=points.map(p=>({x:x(p.t),y:y(p.v)}));
+ const slopes=nodes.slice(1).map((p,i)=>{
+  const dx=p.x-nodes[i].x;
+  return dx>0?(p.y-nodes[i].y)/dx:0;
+ });
+ const tangents=nodes.map((p,i)=>{
+  if(i===0)return slopes[0]||0;
+  if(i===nodes.length-1)return slopes[i-1]||0;
+  const a=slopes[i-1],b=slopes[i];
+  return a*b>0?2*a*b/(a+b):0;
+ });
+ context.moveTo(nodes[0].x,nodes[0].y);
+ for(let i=1;i<nodes.length;i++){
+  const a=nodes[i-1],b=nodes[i],dx=(b.x-a.x)/3;
+  if(dx<=0){context.lineTo(b.x,b.y);continue;}
+  context.bezierCurveTo(a.x+dx,a.y+dx*tangents[i-1],b.x-dx,b.y-dx*tangents[i],b.x,b.y);
+ }
+}
 function drawChart(){
  const canvas=$('chart'),rect=canvas.getBoundingClientRect(),w=Math.max(350,rect.width),h=290,dpr=window.devicePixelRatio||1;
  canvas.width=w*dpr;canvas.height=h*dpr;
@@ -235,7 +257,7 @@ function drawChart(){
    for(const p of visible){const bin=Math.floor(x(p.t));let b=buckets.get(bin);if(!b){b={first:p,last:p,min:p,max:p};buckets.set(bin,b);}else{b.last=p;if(p.v<b.min.v)b.min=p;if(p.v>b.max.v)b.max=p;}}
    for(const b of buckets.values()){const unique=[b.first,b.min,b.max,b.last].filter((p,i,arr)=>arr.indexOf(p)===i).sort((a,z)=>a.t-z.t);points.push(...unique);}
  }else points.push(...visible);
- c.beginPath();points.forEach((p,i)=>i?c.lineTo(x(p.t),y(p.v)):c.moveTo(x(p.t),y(p.v)));c.strokeStyle='#266bb5';c.lineWidth=2.1;c.stroke();
+ c.beginPath();curvedPricePath(c,points,x,y);c.strokeStyle='#266bb5';c.lineWidth=2.1;c.lineJoin='round';c.lineCap='round';c.stroke();
  const hitPoints=points.map(p=>({event:p.event,x:x(p.t),y:y(p.v),kind:'price'}));
  // Locate the matching price using binary search, not O(prices×events) findIndex.
  // Only draw the markers inside the visible window.
@@ -266,7 +288,7 @@ $('demo').addEventListener('click',()=>{
  loadGeneration++;
  rawEvents=CEP.demoEvents();
  $('pricesFile').value='';$('newsFile').value='';
- $('source').textContent='Synthetic demonstration (not original market records)';
+ $('source').textContent='WWDC 2022 demonstration: 190 prices and 40 news updates; story groups and completion labels adapted for testing';
  run();
 });$('filter').addEventListener('change',renderTable);$('search').addEventListener('input',renderTable);window.addEventListener('resize',()=>{if(engine)drawChart();});
 $('export').addEventListener('click',()=>{const data=JSON.stringify(results,null,2),blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cep-events.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);});
@@ -310,10 +332,10 @@ async function loadRootCSVs(){
  }catch(err){
   if(generation!==loadGeneration)return;
   // Local file:// URLs cannot fetch adjacent files in most browsers.
-  // Missing files or blocked fetches leave a working synthetic demo.
+  // Missing files or blocked fetches leave a working bundled WWDC demo.
   console.warn('Could not automatically load root CSV files:',err);
   rawEvents=CEP.demoEvents();
-  $('source').textContent='Root CSV auto-load unavailable ('+err.message+'). Showing synthetic demonstration. You can still upload CSV files manually.';
+  $('source').textContent='Root CSV auto-load unavailable ('+err.message+'). Showing bundled WWDC 2022 demonstration (adapted story groups). You can still upload CSV files manually.';
   run();
  }
 }
