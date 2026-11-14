@@ -236,11 +236,22 @@ function curvedPricePath(context,points,x,y){
  }
 }
 function drawChart(){
- const canvas=$('chart'),rect=canvas.getBoundingClientRect(),w=Math.max(350,rect.width),h=290,dpr=window.devicePixelRatio||1;
+ const [minT,maxT]=viewport.view;
+ const visibleMarkers=chartEvents.slice(lowerBound(chartEvents,minT),lowerBound(chartEvents,maxT+1));
+ const markerGroups=new Map();
+ for(const marker of visibleMarkers){
+  if(!markerGroups.has(marker.t))markerGroups.set(marker.t,[]);
+  markerGroups.get(marker.t).push(marker);
+ }
+ const stackGap=12;
+ let largestStack=1;
+ for(const group of markerGroups.values())largestStack=Math.max(largestStack,group.length);
+ const canvas=$('chart'),rect=canvas.getBoundingClientRect(),w=Math.max(350,rect.width),h=Math.max(290,78+(largestStack-1)*stackGap),dpr=window.devicePixelRatio||1;
+ canvas.style.height=h+'px';canvas.style.maxHeight='none';
  canvas.width=w*dpr;canvas.height=h*dpr;
  const c=canvas.getContext('2d');c.scale(dpr,dpr);c.clearRect(0,0,w,h);
  if(!chartPrices.length){chartHover.setPoints([]);c.fillText('Import prices to display the timeline.',22,40);return;}
- const [minT,maxT]=viewport.view,margin={l:60,r:15,t:20,b:38},iw=w-margin.l-margin.r,ih=h-margin.t-margin.b;
+ const margin={l:60,r:15,t:20,b:38},iw=w-margin.l-margin.r,ih=h-margin.t-margin.b;
  const start=lowerBound(chartPrices,minT),end=lowerBound(chartPrices,maxT+1);
  const visible=chartPrices.slice(start,end);
  if(!visible.length){chartHover.setPoints([]);c.fillText('No price records in this selected time range.',22,40);return;}
@@ -261,13 +272,22 @@ function drawChart(){
  const hitPoints=points.map(p=>({event:p.event,x:x(p.t),y:y(p.v),kind:'price'}));
  // Locate the matching price using binary search, not O(prices×events) findIndex.
  // Only draw the markers inside the visible window.
- const eventStart=lowerBound(chartEvents,minT),eventEnd=lowerBound(chartEvents,maxT+1);
- const visibleMarkers=chartEvents.slice(eventStart,eventEnd);
- for(const m of visibleMarkers){
-   const idx=Math.min(chartPrices.length-1,lowerBound(chartPrices,m.t));
-   const reference=chartPrices[idx],px=x(m.t),py=y(reference.v);
-   c.fillStyle=m.color;c.beginPath();c.arc(px,py,m.event.Significance==='News Update'?3:5,0,Math.PI*2);c.fill();
-   hitPoints.push({event:m.event,x:px,y:py,kind:'event'});
+ for(const [timestamp,group] of markerGroups){
+   const idx=Math.min(chartPrices.length-1,lowerBound(chartPrices,timestamp));
+   const px=x(timestamp),referenceY=y(chartPrices[idx].v);
+   // Keep each timestamp at its true x position. Grow the stack upwards,
+   // shifting the whole column down only when needed to keep it in view.
+   const baseY=Math.max(referenceY,margin.t+5+(group.length-1)*stackGap);
+   if(group.length>1){
+     c.beginPath();c.moveTo(px,referenceY);c.lineTo(px,baseY);
+     c.lineTo(px,baseY-(group.length-1)*stackGap);
+     c.strokeStyle='#a8b5c6';c.lineWidth=1;c.stroke();
+   }
+   group.forEach((m,index)=>{
+     const py=baseY-index*stackGap;
+     c.fillStyle=m.color;c.beginPath();c.arc(px,py,m.event.Significance==='News Update'?3:5,0,Math.PI*2);c.fill();
+     hitPoints.push({event:m.event,x:px,y:py,kind:'event'});
+   });
  }
  c.fillStyle='#7b8a9c';c.fillText(fmt(minT),margin.l,h-10);c.textAlign='right';c.fillText(fmt(maxT),w-margin.r,h-10);c.textAlign='left';
  $('range').textContent=visible.length.toLocaleString()+' of '+chartPrices.length.toLocaleString()+' price points · '+visibleMarkers.length.toLocaleString()+' event markers';
