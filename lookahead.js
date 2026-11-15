@@ -12,7 +12,7 @@
  * complete future window are strictly earlier than the chosen cutoff. No
  * future test labels or observations are used to train the prediction.
  */
-(function(global){'use strict';
+(function initializeLookAhead(global){'use strict';
 const ms=e=>+new Date(e.TimeStamp);
 function median(xs){if(!xs.length)return 0;const v=[...xs].sort((a,b)=>a-b),m=v.length>>1;return v.length%2?v[m]:(v[m-1]+v[m])/2;}
 function build(prices,events,cutIndex,options={}){
@@ -83,5 +83,5 @@ function build(prices,events,cutIndex,options={}){
  scenarios.forEach(s=>s.mae=mae(s));
  return {security:sec,cutoff:cutoff.TimeStamp,cutoffId:cutoff.Id,cutoffPrice:cutoff.LIST_PRICE,history:series.slice(Math.max(0,anchor-o.history),anchor+1),options:o,scenarios,actual,actualEvents:future,inputs:now,availableAnalogues:ranked.length,lookaheadPatterns:relevant.filter(e=>ms(e)<=stamp&&ms(e)>ms(series[Math.max(0,anchor-o.history)])).map(e=>({Id:e.Id,Significance:e.Significance,TimeStamp:e.TimeStamp})),index,availableFuture:actual.length};
 }
-global.CEPLookAhead={build,median};
+global.CEPLookAhead={build,median,workerSource:"("+initializeLookAhead.toString()+")(self);"};
 })(window);

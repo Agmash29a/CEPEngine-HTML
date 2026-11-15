@@ -10,11 +10,38 @@
  const canvas=$('lookaheadCanvas'),ctx=canvas.getContext('2d');
  const fmt=t=>new Date(t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
  const range=$('lookaheadCutoff');
+ const progress=new RenderProgress.Progress(panel,panel);
+ let refreshing=false,refreshAgain=false,refreshTask=null,dataVersion=0;
  function selectedIndex(){return Math.round(Number(range.value));}
  function refresh(){
-   if(!prices.length){$('lookaheadStats').textContent='Load a Price CSV to begin.';return;}
-   const index=selectedIndex(),h=Number($('lookaheadHistory').value),n=Number($('lookaheadHorizon').value);
-   current=CEPLookAhead.build(prices,events,index,{history:h,horizon:n,neighbours:Number($('lookaheadNeighbours').value)});
+   if(refreshing){refreshAgain=true;return refreshTask;}
+   if(!prices.length){current=null;$('lookaheadStats').textContent='Load a Price CSV to begin.';drawEmpty();return Promise.resolve();}
+   refreshing=true;
+   refreshTask=(async()=>{
+    let failed=false;
+    try{
+     do{
+      refreshAgain=false;
+      if(!prices.length){current=null;$('lookaheadStats').textContent='Load a Price CSV to begin.';drawEmpty();break;}
+      const version=dataVersion,index=selectedIndex();
+      const options={history:Number($('lookaheadHistory').value),horizon:Number($('lookaheadHorizon').value),neighbours:Number($('lookaheadNeighbours').value)};
+      const sourcePrices=prices,sourceEvents=events;
+      progress.start();
+      await RenderProgress.paint();
+      const next=await RenderProgress.compute(CEPLookAhead.workerSource,
+        'function(p){return self.CEPLookAhead.build(p.prices,p.events,p.index,p.options);}',
+        {prices:sourcePrices,events:sourceEvents,index,options},
+        ()=>CEPLookAhead.build(sourcePrices,sourceEvents,index,options));
+      if(version!==dataVersion){refreshAgain=true;continue;}
+      current=next;renderResult(index);
+      await RenderProgress.paint();
+     }while(refreshAgain);
+    }catch(err){failed=true;current=null;$('lookaheadStats').textContent='Could not render Look Ahead: '+err.message;drawEmpty('Look Ahead rendering failed.');console.error(err);}
+    finally{progress.finish(failed);refreshing=false;refreshTask=null;}
+   })();
+   return refreshTask;
+ }
+ function renderResult(index){
    $('lookaheadCutoffLabel').textContent='Historical cut-off: '+fmt(prices[index].TimeStamp)+' · '+(prices[index].SECURITY||'Unknown security');
    if(current.error){$('lookaheadStats').textContent=current.error;$('lookaheadDescription').textContent='Choose a later cut-off or shorter horizon.';drawEmpty(current.error);return;}
    const paths=current.scenarios,shown=paths.filter(p=>p.prices);
@@ -69,14 +96,14 @@
    ctx.fillText('← observed past',m.l+5,m.t+12);ctx.fillText('hypothetical futures →',Math.min(cutoffX+14,width-165),m.t+12);
  }
  function setData(all){
-   events=all||[];
+   dataVersion++;events=all||[];
    prices=events.filter(e=>e.Significance==='Price Update'&&Number.isFinite(+new Date(e.TimeStamp))&&Number.isFinite(Number(e.LIST_PRICE))&&Number(e.LIST_PRICE)>0)
      .sort((a,b)=>+new Date(a.TimeStamp)-new Date(b.TimeStamp));
    range.max=Math.max(0,prices.length-1);
    // Hold out the final 15% by default for a visible comparison with
    // actual values, while still retaining enough earlier training examples.
    range.value=Math.max(0,Math.floor((prices.length-1)*.85));
-   refresh();
+   return refresh();
  }
  function save(){
    if(!current||current.error)return;

@@ -208,3 +208,8 @@ The price trace uses monotone cubic curves through the plotted prices, avoiding 
 ## Rendering and hover feedback
 
 While the engine processes data and draws the graph, controls are locked and the main panel shows Rendering. The lock clears on completion or error. Graph tooltips are attached at document level so sticky event-table headings cannot cover them.
+
+
+## Rendering indicators
+
+The main graph and Look Ahead panel show “Rendering…” and lock their controls until calculation and drawing finish. No percentages or time estimates are shown. Computation runs in local Web Workers to keep the interface responsive, with a synchronous fallback where workers are unavailable. No data leaves the browser.

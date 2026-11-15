@@ -148,29 +148,11 @@ $('hierarchyIn').addEventListener('click',()=>hierarchy.zoomBy(1.3));
 $('hierarchyOut').addEventListener('click',()=>hierarchy.zoomBy(1/1.3));
 $('hierarchyFit').addEventListener('click',()=>hierarchy.fit());
 $('hierarchyDownload').addEventListener('click',()=>hierarchy.downloadSVG());
-// Paint the busy state before synchronous CEP work blocks the browser thread.
-const renderPanel=$('chart').closest('.panel');
-renderPanel.style.position='relative';
-const renderOverlay=document.createElement('div');
-renderOverlay.hidden=true;
-renderOverlay.setAttribute('aria-hidden','true');
-renderOverlay.style.cssText='position:absolute;inset:0;z-index:20;background:rgba(245,247,250,.88);align-items:center;justify-content:center;border-radius:inherit;cursor:wait;font:600 20px system-ui;color:#1f3b64;';
-renderOverlay.textContent='Rendering…';
-renderPanel.append(renderOverlay);
-// Keep the announcement outside the inert application controls.
-const renderStatus=document.createElement('div');
-renderStatus.setAttribute('role','status');renderStatus.setAttribute('aria-live','polite');
-renderStatus.style.cssText='position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;';
-document.body.append(renderStatus);
+const mainProgress=new RenderProgress.Progress($('chart').closest('.panel'),$('appLayout'));
 let isRendering=false,renderAgain=false,renderTask=null;
-const paintFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 function run(){
  if(isRendering){renderAgain=true;return renderTask;}
  isRendering=true;
- const layout=$('appLayout'),previousInert=layout.inert,previousFocus=document.activeElement;
- layout.inert=true;renderPanel.setAttribute('aria-busy','true');
- renderOverlay.hidden=false;renderOverlay.style.display='flex';
- renderStatus.textContent='Rendering';
  renderTask=(async()=>{
   let failure=null;
   try{
@@ -178,19 +160,18 @@ function run(){
     renderAgain=false;
     const source=rawEvents.slice();
     const options={priceThreshold:Number($('priceThreshold').value)/100,storyThreshold:Number($('storyThreshold').value)/100,newsWindow:Number($('newsWindow').value)};
-    await paintFrame();
-    engine=new CEP.Engine(options);results=engine.Initialise(source);render();
-    // Retain the lock until the freshly drawn graph has had a paint opportunity.
-    await paintFrame();
+    mainProgress.start();
+    chartHover.hide();
+    await RenderProgress.paint();
+    results=await RenderProgress.compute(CEP.workerSource,
+      'function(p){return new self.CEP.Engine(p.options).Initialise(p.source);}',
+      {source,options},()=>new CEP.Engine(options).Initialise(source));
+    engine=new CEP.Engine(options);engine.Buffer.EventBuffer=results;
+    render();
+    await RenderProgress.paint();
    }while(renderAgain);
   }catch(err){failure=err;console.error(err);}
-  finally{
-   renderOverlay.hidden=true;renderOverlay.style.display='none';
-   renderPanel.setAttribute('aria-busy','false');layout.inert=previousInert;
-   isRendering=false;renderTask=null;
-   renderStatus.textContent=failure?'Rendering failed':'Rendering complete';
-   if(previousFocus?.isConnected&&!previousInert)previousFocus.focus({preventScroll:true});
-  }
+  finally{mainProgress.finish(!!failure);isRendering=false;renderTask=null;}
   if(failure)alert('Could not process event stream: '+failure.message);
  })();
  return renderTask;

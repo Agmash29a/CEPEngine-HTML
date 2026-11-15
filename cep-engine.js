@@ -4,7 +4,7 @@
  * Parser.cs, Engine.cs. Terminology and explanatory comments are retained.
  * No ASP.NET, SQL Server, or libraries are required.
  */
-(function (global) {
+(function initializeCEP(global) {
   'use strict';
   const EVENT_TYPES = Object.freeze({ STORY_TAKE_OVERWRITE:'STORY_TAKE_OVERWRITE', ALERT:'ALERT', HEADLINE:'HEADLINE', STORY_TAKE_APPEND:'STORY_TAKE_APPEND', DELETE:'DELETE' });
   let serial = 0;
@@ -128,6 +128,8 @@
   class Engine {
     constructor(options={}){this.options={priceThreshold:.0005,storyThreshold:.001,newsWindow:5,bufferSize:100000,...options};this.Buffer=new Buffer(this.options.bufferSize);}
     Initialise(sourceEvents){
+      // A fresh worker must allocate derived IDs above all source event IDs.
+      for(const event of sourceEvents){const match=/^event-(\d+)$/.exec(event.Id||'');if(match)serial=Math.max(serial,Number(match[1]));}
       // Add Complex event pattern definitions. The order follows Engine.Initialise.
       const o=this.options,b=this.Buffer;b.EventBuffer=[];
       b.ActivePatterns=[new PriceChangedWithNewsUpdate('plus',o.newsWindow),new PriceChangedPositive(o.priceThreshold),new PriceChangedWithNewsUpdate('minus',o.newsWindow),new PriceChangedNegative(o.priceThreshold),new BasicStory(),new PriceChangedBasicStory('plus',o.storyThreshold),new PriceChangedBasicStory('minus',o.storyThreshold)];
@@ -174,5 +176,5 @@
     if(!data)throw Error('Bundled WWDC demonstration data is missing (demo-data.js)');
     return [...parsePricesFile(data.prices),...parseNewsFile(data.news)];
   }
-  global.CEP={Engine,Buffer,Pattern,DAG,EVENT_TYPES,parseCSV,parsePricesFile,parseNewsFile,demoEvents,makeEvent};
+  global.CEP={Engine,Buffer,Pattern,DAG,EVENT_TYPES,parseCSV,parsePricesFile,parseNewsFile,demoEvents,makeEvent,workerSource:"("+initializeCEP.toString()+")(self);"};
 })(window);
