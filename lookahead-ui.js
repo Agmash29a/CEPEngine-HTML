@@ -96,14 +96,14 @@
    ctx.fillText('← observed past',m.l+5,m.t+12);ctx.fillText('hypothetical futures →',Math.min(cutoffX+14,width-165),m.t+12);
  }
  function setData(all){
-   dataVersion++;events=all||[];
+   dataVersion++;current=null;events=all||[];
    prices=events.filter(e=>e.Significance==='Price Update'&&Number.isFinite(+new Date(e.TimeStamp))&&Number.isFinite(Number(e.LIST_PRICE))&&Number(e.LIST_PRICE)>0)
      .sort((a,b)=>+new Date(a.TimeStamp)-new Date(b.TimeStamp));
    range.max=Math.max(0,prices.length-1);
    // Hold out the final 15% by default for a visible comparison with
    // actual values, while still retaining enough earlier training examples.
    range.value=Math.max(0,Math.floor((prices.length-1)*.85));
-   return refresh();
+   return panel.open?refresh():Promise.resolve();
  }
  function save(){
    if(!current||current.error)return;
@@ -116,6 +116,7 @@
  $('lookaheadLatest').addEventListener('click',()=>{range.value=range.max;refresh();});
  $('lookaheadHoldout').addEventListener('click',()=>{range.value=Math.floor((prices.length-1)*.75);refresh();});
  $('lookaheadExport').addEventListener('click',save);
- window.addEventListener('resize',draw);
+ panel.addEventListener('toggle',()=>{if(panel.open){if(current)draw();else refresh();}});
+ window.addEventListener('resize',()=>{if(panel.open)draw();});
  global.LookAheadUI={setData,refresh};
 })(window);

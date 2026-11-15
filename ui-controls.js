@@ -1,11 +1,12 @@
 /* Progressive disclosure for the workspace; detection logic is unchanged. */
 (()=>{'use strict';
  const $=id=>document.getElementById(id);
- $('openData').addEventListener('click',()=>{
-  if($('appLayout').classList.contains('sidebar-collapsed'))$('sidebarToggle').click();
-  $('pricesFile').focus();
+ document.querySelectorAll('.workspace-bar a[href^="#"]').forEach(link=>{
+  link.addEventListener('click',()=>{const panel=$(link.getAttribute('href').slice(1));if(panel?.tagName==='DETAILS')panel.open=true;});
  });
- $('openResearch').addEventListener('click',()=>{$('researchPanel').open=true;});
+ $('detectedPanel').addEventListener('toggle',()=>{
+  if($('detectedPanel').open&&!$('hierarchyPanel').hidden)requestAnimationFrame(()=>$('hierarchyFit').click());
+ });
  const tabs=[...document.querySelectorAll('.inspector-tabs [role="tab"]')];
  function activate(tab,focus=false){
   for(const item of tabs){

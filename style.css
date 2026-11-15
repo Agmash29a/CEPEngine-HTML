@@ -256,3 +256,13 @@ summary{cursor:pointer}summary:focus-visible,button:focus-visible,a:focus-visibl
  .legend{gap:10px}.lookahead-actions button{flex:1 1 120px}.tablewrap{max-height:330px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Optional analysis panels start closed; their summaries remain visible. */
+.workspace-bar{justify-content:flex-end}
+.panel-summary{display:flex;align-items:center;gap:12px;list-style:none;cursor:pointer;font-size:15px;font-weight:700;min-height:24px}
+.panel-summary::-webkit-details-marker{display:none}
+.panel-summary::before{content:'›';font-size:23px;line-height:1;color:#61738b;transition:transform .15s}
+.collapsible-panel[open]>.panel-summary::before{transform:rotate(90deg)}
+.collapsible-panel[open]>.panel-summary{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #e3eaf2}
+.panel-summary #count,.panel-summary .summary-note{margin-left:auto;font-size:12px;font-weight:400;color:#697a91}
+@media(max-width:650px){.panel-summary{flex-wrap:wrap}.panel-summary #count{font-size:11px}}

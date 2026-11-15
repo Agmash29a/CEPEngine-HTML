@@ -46,7 +46,6 @@
    updateClassChoices();updateFacts();run();
    $('scepSource').textContent='Synthetic demonstration: fictional event times, prices, employees and profits. No actual market records.';
  }
- $('scepDemo').addEventListener('click',useExample);
  $('scepRun').addEventListener('click',run);
  $('scepExport').addEventListener('click',()=>{if(analysis)exportFile('scep-results.json',{rule:analysis.rule,summary:analysis.summary,derived:analysis.derived,knowledge:kb.triples});});
  $('scepExportExample').addEventListener('click',()=>exportFile('scep-example-data.json',example));

@@ -116,7 +116,7 @@ function selectEvent(id,scroll=false){
  $('events').querySelectorAll('tr[aria-selected="true"]').forEach(row=>row.removeAttribute('aria-selected'));
  const selectedRow=[...$('events').querySelectorAll('tr[data-id]')].find(row=>row.dataset.id===String(id));
  if(selectedRow)selectedRow.setAttribute('aria-selected','true');
- if(scroll){document.getElementById('tab-details').click();$('selectedEventPanel').scrollIntoView({behavior:'smooth',block:'start'});}
+ if(scroll){$('detectedPanel').open=true;document.getElementById('tab-details').click();$('selectedEventPanel').scrollIntoView({behavior:'smooth',block:'start'});}
 }
 
 const chartHover=new ChartHover($('chart'),$('chartTooltip'));
@@ -327,16 +327,10 @@ $('zoomRight').addEventListener('click',()=>viewport.pan(.6));
 $('zoomReset').addEventListener('click',()=>viewport.reset());
 $('events').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;selectEvent(tr.dataset.id,true);});
 $('events').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const tr=e.target.closest('tr[data-id]');if(!tr)return;e.preventDefault();selectEvent(tr.dataset.id,true);});
-// A pending manual upload must not overwrite a newer upload or demo selection.
+// A pending manual upload must not overwrite a newer upload.
 let loadGeneration=0;
-$('run').addEventListener('click',run);
-$('demo').addEventListener('click',()=>{
- loadGeneration++;
- rawEvents=CEP.demoEvents();
- $('pricesFile').value='';$('newsFile').value='';
- $('source').textContent='Demo · 190 prices · 40 news updates';
- run();
-});$('filter').addEventListener('change',renderTable);$('search').addEventListener('input',renderTable);window.addEventListener('resize',()=>{if(engine)drawChart();});
+for(const id of ['priceThreshold','storyThreshold','newsWindow'])$(id).addEventListener('change',()=>{if($(id).checkValidity())run();});
+$('filter').addEventListener('change',renderTable);$('search').addEventListener('input',renderTable);window.addEventListener('resize',()=>{if(engine)drawChart();});
 $('export').addEventListener('click',()=>{const data=JSON.stringify(results,null,2),blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cep-events.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);});
 async function load(){
  const generation=++loadGeneration;
