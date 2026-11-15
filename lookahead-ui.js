@@ -45,7 +45,7 @@
    $('lookaheadCutoffLabel').textContent='Historical cut-off: '+fmt(prices[index].TimeStamp)+' · '+(prices[index].SECURITY||'Unknown security');
    if(current.error){$('lookaheadStats').textContent=current.error;$('lookaheadDescription').textContent='Choose a later cut-off or shorter horizon.';drawEmpty(current.error);return;}
    const paths=current.scenarios,shown=paths.filter(p=>p.prices);
-   $('lookaheadStats').textContent=current.security+' · '+current.availableAnalogues+' historical analogue candidates · '+current.lookaheadPatterns.length+' nearby observed higher-level events · '+current.availableFuture+' future price observations available for comparison';
+   $('lookaheadStats').textContent=current.security+' · '+current.availableAnalogues+' past patterns · '+current.availableFuture+' comparison prices';
    $('lookaheadDescription').textContent=paths.map(s=>s.label+': '+(s.prices? s.sampleCount+' prior examples; final estimated change '+s.percent.at(-1).toFixed(2)+'%'+(s.mae==null?'':' · later-observed MAE '+s.mae.toFixed(3)) : 'no qualifying historical examples')).join('\n')+'\nThese are plausible historical pattern continuations, not calibrated probabilities or demonstrated causal effects.';
    draw();
  }

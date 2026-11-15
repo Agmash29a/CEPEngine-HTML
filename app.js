@@ -97,7 +97,7 @@ function showEventAttributes(e){
    }
  }
  const extras=make('details','event-raw-details');
- extras.append(make('summary','event-raw-toggle','All event attributes · raw record'));
+ extras.append(make('summary','event-raw-toggle','Raw data'));
  const raw=make('dl','event-raw-grid');
  for(const key of Object.keys(e).sort((x,y)=>x.localeCompare(y))){
    const pair=make('div','event-raw-row');
@@ -116,7 +116,7 @@ function selectEvent(id,scroll=false){
  $('events').querySelectorAll('tr[aria-selected="true"]').forEach(row=>row.removeAttribute('aria-selected'));
  const selectedRow=[...$('events').querySelectorAll('tr[data-id]')].find(row=>row.dataset.id===String(id));
  if(selectedRow)selectedRow.setAttribute('aria-selected','true');
- if(scroll)$('selectedEventPanel').scrollIntoView({behavior:'smooth',block:'start'});
+ if(scroll){document.getElementById('tab-details').click();$('selectedEventPanel').scrollIntoView({behavior:'smooth',block:'start'});}
 }
 
 const chartHover=new ChartHover($('chart'),$('chartTooltip'));
@@ -205,7 +205,7 @@ function renderTable(){
   .map((e,index)=>({e,index}))
   .sort((a,b)=>compareEvents(a.e,b.e,eventSort.key,eventSort.direction)||a.index-b.index);
  const visible=shown.slice(0,3000);
- $('count').textContent=`${visible.length} of ${shown.length} matching events (${results.length} total)`;
+ $('count').textContent=`${shown.length.toLocaleString()} matches${visible.length<shown.length?' · showing first '+visible.length.toLocaleString():''}`;
  $('events').innerHTML=visible.map(({e})=>`<tr tabindex="0" data-id="${esc(e.Id)}"><td>${esc(fmt(e.TimeStamp))}</td><td><span class="pill ${SIMPLE.includes(e.Significance)?'':'complex'}">${esc(e.Significance)}</span></td><td>${esc(e.PNAC||e.SECURITY||'—')}</td><td>${e.LIST_PRICE!==undefined?Number(e.LIST_PRICE).toFixed(3):'—'}</td><td>${esc(e.HEADLINE_ALERT_TEXT||e.MatchDescription||'')}</td></tr>`).join('');
  const previousId=pdag.selectedId;
  if(previousId){
@@ -334,7 +334,7 @@ $('demo').addEventListener('click',()=>{
  loadGeneration++;
  rawEvents=CEP.demoEvents();
  $('pricesFile').value='';$('newsFile').value='';
- $('source').textContent='WWDC 2022 demonstration: 190 prices and 40 news updates; story groups and completion labels adapted for testing';
+ $('source').textContent='Demo · 190 prices · 40 news updates';
  run();
 });$('filter').addEventListener('change',renderTable);$('search').addEventListener('input',renderTable);window.addEventListener('resize',()=>{if(engine)drawChart();});
 $('export').addEventListener('click',()=>{const data=JSON.stringify(results,null,2),blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cep-events.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);});
@@ -362,5 +362,5 @@ $('compareRules').addEventListener('click',()=>{const original=engine.ShowAllEve
 $('orderCheck').addEventListener('click',()=>{const v=CEPInsights.orderingCheck(rawEvents,{points:Number($('pointRise').value)});$('insightReport').textContent=(v.sameCounts?'Counts stayed the same.':'WARNING: Some counts changed when input order was reversed.')+'\nOriginal: '+JSON.stringify({jumps:v.original.priceJumps,stories:v.original.stories,matches:v.original.newsAndPriceMatches})+'\nReversed: '+JSON.stringify({jumps:v.reversed.priceJumps,stories:v.reversed.stories,matches:v.reversed.newsAndPriceMatches})+'\n'+v.notice;});
 $('thresholdCheck').addEventListener('click',()=>{const rows=CEPInsights.thresholdCheck(rawEvents);$('insightReport').textContent='How changing the minimum price rise changes what is detected:\n'+rows.map(r=>r.priceRiseNeeded+' points: '+r.priceJumps+' jumps, '+r.newsAndPriceMatches+' news/price matches').join('\n')+'\nThese are different rules, not estimates of forecast accuracy.';});
 $('pricesFile').addEventListener('change',load);$('newsFile').addEventListener('change',load);
-$('source').textContent='WWDC 2022 demonstration: 190 prices and 40 news updates; story groups and completion labels adapted for testing';
+$('source').textContent='Demo · 190 prices · 40 news updates';
 run();})();

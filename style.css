@@ -220,3 +220,39 @@
  #appLayout.sidebar-collapsed #sidebar .sidebar-toggle-label{display:inline}
 }
 @media(prefers-reduced-motion:reduce){#appLayout{transition:none}}
+
+/* Task-focused workspace: data, chart, results, then optional analysis. */
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+header{padding:18px 28px}header p{font-size:12px}header>a{font-size:12px}
+.content{gap:16px}.paneltitle h2{margin:0}.paneltitle{margin-bottom:12px}
+.workspace-bar{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.workspace-bar>button{width:auto;background:#256cbd;color:#fff;border-color:#256cbd}
+.workspace-bar nav{display:flex;gap:20px;font-size:13px;font-weight:600}
+.event-toolbar{display:flex;align-items:end;gap:12px;margin:16px 0}
+.event-toolbar label{display:grid;gap:5px;font-size:12px;font-weight:650;min-width:0}
+.event-toolbar select{min-width:190px}.event-search{flex:1}.event-toolbar button{width:auto;white-space:nowrap}
+.stats{gap:10px}.stat{display:flex;align-items:center;gap:12px;padding:12px 16px}.stat .value{font-size:22px}.stat .name{font-size:12px}
+.advanced-settings{border-top:1px solid #e3eaf2;margin:18px 0 12px;padding-top:14px}
+summary{cursor:pointer}summary:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #256cbd;outline-offset:3px}
+.advanced-settings>summary{font-size:13px;font-weight:650;color:#385778}
+.inline-help{font-size:12px;color:#66758a;margin:12px 0}.inline-help>summary{width:fit-content}.inline-help p{max-width:850px;line-height:1.65}
+.inspector-tabs{display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #dce3eb}
+.inspector-tabs button{width:auto;border-color:transparent;background:#f3f6fa;color:#61738b;font-size:13px;padding:9px 16px}
+.inspector-tabs button[aria-selected=true]{background:#e7f0fc;border-color:#c7daf3;color:#205e9f}
+#detectedPanel>.selected-event-panel{margin-top:12px;padding-top:0;border-top:0}
+#detectedPanel>.research-pdag,#detectedPanel>#hierarchyPanel{margin-top:12px;padding:16px;border:0;background:#f8fafc}
+#detectedPanel .event-hero{padding:14px 16px}#detectedPanel .event-hero-title{font-size:18px}
+#detectedPanel .event-metric{padding:10px 14px}#detectedPanel .event-detail-content{gap:12px}
+#lookaheadPanel>.muted{margin-top:0}.lookahead-actions{margin:12px 0}.lookahead-plot{margin-top:12px}
+#lookaheadPanel .advanced-settings{margin:12px 0 16px;padding:10px 0;border-top:0;border-bottom:1px solid #e3eaf2}
+#sidebar .sidebar-content{padding:8px 20px 20px}#sidebar .sidebar-content h2{margin-top:0}
+@media(max-width:650px){
+ header{align-items:flex-start;padding:16px}header h1 span{display:block;margin-top:2px}header p{max-width:250px}
+ .workspace-bar{align-items:flex-start;flex-direction:column;gap:12px}.workspace-bar nav{gap:24px}
+ .event-toolbar{flex-wrap:wrap;gap:10px}.event-toolbar label{flex:1 1 100%}.event-toolbar select{min-width:0}
+ .event-toolbar button{margin-left:auto}.stats{gap:8px}.stat{display:block;padding:10px 12px}
+ .panel{padding:14px}.paneltitle{flex-wrap:wrap;gap:4px}.inspector-tabs{gap:5px}.inspector-tabs button{flex:1;padding:9px 5px;font-size:12px}
+ .legend{gap:10px}.lookahead-actions button{flex:1 1 120px}.tablewrap{max-height:330px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
