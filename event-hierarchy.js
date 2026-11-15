@@ -125,9 +125,9 @@
         g.addEventListener('click',choose);
         g.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();choose();}});
         if(node.children.length||node.collapsed) {
-          const toggle=element('g',{transform:`translate(${NODE_W-17},15)`,role:'button',tabindex:'0','aria-label':node.collapsed?'Expand sources':'Hide sources'});
+          const toggle=element('g',{transform:`translate(${NODE_W-17},15)`,role:'button',tabindex:'0','aria-label':node.collapsed?'Expand sources':'Collapse sources','aria-expanded':String(!node.collapsed)});
           toggle.append(element('circle',{r:11,fill:'#ecf2f9',stroke:'#b9c6d6'}));
-          toggle.append(element('text',{'text-anchor':'middle',y:4,fill:'#3f526d','font-size':16},node.collapsed?'+':'−'));
+          toggle.append(element('path',{d:'M-2 -5l5 5-5 5',fill:'none',stroke:'#61738b','stroke-width':1.75,'stroke-linecap':'round','stroke-linejoin':'round',transform:node.collapsed?'rotate(0)':'rotate(90)','aria-hidden':'true'}));
           const act=ev=>{ev.stopPropagation();if(this.collapsed.has(e.Id))this.collapsed.delete(e.Id);else this.collapsed.add(e.Id);this.render();this.fit();};
           toggle.addEventListener('click',act);toggle.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();act(ev);}});
           g.append(toggle);
